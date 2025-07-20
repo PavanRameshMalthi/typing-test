@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Typing Speed Tester</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Typing Speed Tester</h1>
+
+    <textarea id="customInput" placeholder="Enter custom paragraph or leave blank..."></textarea>
+    <div id="paragraphDisplay">The quick brown fox jumps over the lazy dog.</div>
+
+    <textarea id="typingInput" placeholder="Start typing here..." disabled></textarea>
+
+    <div class="controls">
+      <label>Timer (sec): <input type="number" id="timeInput" min="10" max="600" value="60" /></label>
+      <button id="startBtn">Start</button>
+      <button id="stopBtn">Stop</button>
+      <button id="retestBtn">Retest</button>
+      <button id="toggleTheme">Toggle Theme</button>
+      <button id="replayMistakesBtn">Replay Mistakes</button>
+    </div>
+
+    <div class="results">
+      <p>WPM: <span id="wpm">0</span></p>
+      <p>Accuracy: <span id="accuracy">0</span>%</p>
+      <p>Mistakes: <span id="mistakes">0</span></p>
+    </div>
+
+    <canvas id="performanceChart"></canvas>
+
+    <h2>📅 Test History</h2>
+    <ul id="historyList"></ul>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
