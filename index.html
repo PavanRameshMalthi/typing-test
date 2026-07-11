@@ -3,40 +3,432 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Typing Speed Tester</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Antigravity Speed Typer - Professional Typing Speed Test</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Improve and measure your typing speed with Antigravity Speed Typer. Real-time statistics, keyboard mistake heatmaps, customizable challenges, certificates, and detailed progress charts." />
+  <meta name="theme-color" content="#4facfe" />
+  
+  <!-- PWA Manifest & Icons -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="css/style.css" />
+  
+  <!-- Third-party CDN Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
-<body>
-  <div class="container">
-    <h1>Typing Speed Tester</h1>
-
-    <textarea id="customInput" placeholder="Enter custom paragraph or leave blank..."></textarea>
-    <div id="paragraphDisplay">The quick brown fox jumps over the lazy dog.</div>
-
-    <textarea id="typingInput" placeholder="Start typing here..." disabled></textarea>
-
-    <div class="controls">
-      <label>Timer (sec): <input type="number" id="timeInput" min="10" max="600" value="60" /></label>
-      <button id="startBtn">Start</button>
-      <button id="stopBtn">Stop</button>
-      <button id="retestBtn">Retest</button>
-      <button id="toggleTheme">Toggle Theme</button>
-      <button id="replayMistakesBtn">Replay Mistakes</button>
-    </div>
-
-    <div class="results">
-      <p>WPM: <span id="wpm">0</span></p>
-      <p>Accuracy: <span id="accuracy">0</span>%</p>
-      <p>Mistakes: <span id="mistakes">0</span></p>
-    </div>
-
-    <canvas id="performanceChart"></canvas>
-
-    <h2>📅 Test History</h2>
-    <ul id="historyList"></ul>
+<body class="theme-dark">
+  <div class="background-gradients">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
   </div>
 
-  <script src="script.js"></script>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="main-header glass-card">
+      <div class="logo-area">
+        <img src="assets/logo.svg" alt="Antigravity Logo" class="header-logo" />
+        <div>
+          <h1>Antigravity Typer</h1>
+          <p class="tagline">Escape gravity, accelerate your fingers</p>
+        </div>
+      </div>
+      
+      <div class="header-controls">
+        <button id="soundToggleBtn" class="btn btn-outline" aria-label="Toggle Sound">🔊 Sound On</button>
+        <button id="fullscreenBtn" class="btn btn-outline" aria-label="Toggle Fullscreen">🗗 Fullscreen</button>
+        <button id="openShortcutsBtn" class="btn btn-outline" aria-label="Keyboard Shortcuts">⌨️ Shortcuts</button>
+        <button id="openLeaderboardBtn" class="btn btn-outline glow-btn" aria-label="Open Leaderboard">🏆 Leaderboard</button>
+      </div>
+    </header>
+
+    <!-- Main Grid Dashboard -->
+    <main class="main-grid">
+      
+      <!-- Configurations Row -->
+      <section class="config-panel glass-card" aria-label="Typing test configuration">
+        <div class="config-group">
+          <label for="difficultySelect">Difficulty:</label>
+          <select id="difficultySelect">
+            <option value="easy">Easy (Simple lowercase)</option>
+            <option value="medium" selected>Medium (Standard capitalization)</option>
+            <option value="hard">Hard (Advanced punctuation)</option>
+            <option value="expert">Expert (Numbers, symbols & code)</option>
+          </select>
+        </div>
+        
+        <div class="config-group">
+          <label for="durationSelect">Time Limit:</label>
+          <select id="durationSelect">
+            <option value="10">10 Seconds</option>
+            <option value="30">30 Seconds</option>
+            <option value="60" selected>1 Minute</option>
+            <option value="120">2 Minutes</option>
+          </select>
+        </div>
+
+        <div class="config-group theme-config">
+          <label for="themeSelect">Theme:</label>
+          <select id="themeSelect">
+            <option value="light">Light</option>
+            <option value="dark" selected>Dark</option>
+            <option value="blue">Ocean Blue</option>
+            <option value="purple">Cyber Purple</option>
+            <option value="green">Emerald Green</option>
+            <option value="amoled">Amoled Black</option>
+          </select>
+        </div>
+
+        <div class="mode-toggles">
+          <button id="modePractice" class="btn mode-btn active">Practice</button>
+          <button id="modeZen" class="btn mode-btn">Zen Mode</button>
+          <button id="modeDaily" class="btn mode-btn">Daily Challenge</button>
+        </div>
+
+        <div class="custom-para-area">
+          <button id="customInputToggle" class="btn btn-outline">✏️ Custom Text</button>
+        </div>
+      </section>
+
+      <!-- Custom Input Textarea Card (Toggled) -->
+      <section id="customInputCard" class="custom-input-card glass-card hidden" aria-label="Custom paragraph input">
+        <h3>Paste Custom Paragraph</h3>
+        <textarea id="customInput" placeholder="Enter custom typing text here. Typing Speed Test will use this content when you start..."></textarea>
+      </section>
+
+      <!-- Typing Playfield -->
+      <section class="typing-playfield glass-card" aria-label="Typing test area">
+        
+        <!-- Progress Info & Timers -->
+        <div class="playfield-header">
+          <!-- Circular Timer -->
+          <div id="timerWrapper" class="timer-wrapper">
+            <svg class="timer-svg" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="45" class="timer-bg-circle"></circle>
+              <circle id="timerCircle" cx="50" cy="50" r="45" class="timer-progress-circle"></circle>
+              <text id="timerText" x="50" y="56" class="timer-text">60</text>
+            </svg>
+          </div>
+          
+          <!-- Modern Horizontal Progress Bar -->
+          <div class="progress-bar-container">
+            <div class="progress-bar-label">Typing Progress</div>
+            <div class="progress-track">
+              <div id="progressBar" class="progress-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- The typing active display -->
+        <div id="typingContainer" class="typing-container">
+          <div id="pausedOverlay" class="paused-overlay hidden">
+            <div class="paused-message">
+              <h2>PAUSED</h2>
+              <p>Click "Resume" or press Escape to continue typing</p>
+            </div>
+          </div>
+          <div id="paragraphDisplay" class="paragraph-display">
+            <!-- Dynamically populated character spans -->
+          </div>
+        </div>
+
+        <!-- Hidden input capturing keystrokes (Crucial for virtual keyboard compatibility) -->
+        <textarea id="typingInput" class="typing-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Press Enter or Click Start to type..." disabled></textarea>
+
+        <!-- Control Action Buttons -->
+        <div class="control-actions">
+          <button id="startBtn" class="btn btn-primary glow-btn">Start Test (Enter)</button>
+          <button id="pauseBtn" class="btn btn-outline hidden">Pause (Esc)</button>
+          <button id="resumeBtn" class="btn btn-primary glow-btn hidden">Resume (Esc)</button>
+          <button id="restartBtn" class="btn btn-outline">Restart (Ctrl+R)</button>
+          <button id="retestBtn" class="btn btn-secondary">Reset Metrics</button>
+          <button id="replayMistakesBtn" class="btn btn-outline">Replay Mistakes</button>
+        </div>
+
+        <!-- Real-Time Metrics Bar -->
+        <div id="liveStatsBar" class="live-stats-bar">
+          <div class="stat-bubble">
+            <span class="bubble-val" id="wpm">0</span>
+            <span class="bubble-lbl">WPM</span>
+          </div>
+          <div class="stat-bubble">
+            <span class="bubble-val" id="cpm">0</span>
+            <span class="bubble-lbl">CPM</span>
+          </div>
+          <div class="stat-bubble">
+            <span class="bubble-val" id="accuracy">100%</span>
+            <span class="bubble-lbl">Accuracy</span>
+          </div>
+          <div class="stat-bubble">
+            <span class="bubble-val" id="mistakes">0</span>
+            <span class="bubble-lbl">Mistakes</span>
+          </div>
+          <div class="stat-bubble">
+            <span class="bubble-val" id="typedChars">0</span>
+            <span class="bubble-lbl">Typed</span>
+          </div>
+          <div class="stat-bubble">
+            <span class="bubble-val" id="remainingChars">0</span>
+            <span class="bubble-lbl">Remaining</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Personal Records Dashboard -->
+      <section class="dashboard-panel glass-card" aria-label="Performance Stats Dashboard">
+        <h2 class="panel-title">📊 Stats Dashboard</h2>
+        <div class="dashboard-grid">
+          <div class="dash-card">
+            <h3>Highest WPM</h3>
+            <p id="highestWpm">0</p>
+          </div>
+          <div class="dash-card">
+            <h3>Average WPM</h3>
+            <p id="avgWpm">0</p>
+          </div>
+          <div class="dash-card">
+            <h3>Best Accuracy</h3>
+            <p id="highestAcc">0%</p>
+          </div>
+          <div class="dash-card">
+            <h3>Avg Accuracy</h3>
+            <p id="avgAcc">0%</p>
+          </div>
+          <div class="dash-card">
+            <h3>Practice Time</h3>
+            <p id="totalTime">0s</p>
+          </div>
+          <div class="dash-card">
+            <h3>Daily Streak</h3>
+            <p id="currentStreak">0 days</p>
+          </div>
+          <div class="dash-card">
+            <h3>Total Tests</h3>
+            <p id="totalTests">0</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Charts & Visuals Panel -->
+      <section class="charts-panel glass-card" aria-label="Typing speed history chart">
+        <h2 class="panel-title">📈 Performance Chart</h2>
+        <div class="chart-container">
+          <canvas id="performanceChart"></canvas>
+        </div>
+      </section>
+
+      <!-- Typing Keyboard Heatmap -->
+      <section class="heatmap-panel glass-card" aria-label="Keyboard typing error heatmap">
+        <h2 class="panel-title">⌨️ Typing Error Heatmap</h2>
+        <p class="panel-subtitle">Keys colored red or orange represent frequent typing mistakes.</p>
+        
+        <div class="keyboard-container">
+          <!-- Keyboard Row 1 -->
+          <div class="keyboard-row">
+            <div class="key spec-key" data-key="~">~</div>
+            <div class="key" data-key="1">1</div>
+            <div class="key" data-key="2">2</div>
+            <div class="key" data-key="3">3</div>
+            <div class="key" data-key="4">4</div>
+            <div class="key" data-key="5">5</div>
+            <div class="key" data-key="6">6</div>
+            <div class="key" data-key="7">7</div>
+            <div class="key" data-key="8">8</div>
+            <div class="key" data-key="9">9</div>
+            <div class="key" data-key="0">0</div>
+            <div class="key" data-key="-">-</div>
+            <div class="key" data-key="=">=</div>
+            <div class="key spec-key backspace" data-key="backspace">Bksp</div>
+          </div>
+          <!-- Keyboard Row 2 -->
+          <div class="keyboard-row">
+            <div class="key spec-key tab" data-key="tab">Tab</div>
+            <div class="key" data-key="q">Q</div>
+            <div class="key" data-key="w">W</div>
+            <div class="key" data-key="e">E</div>
+            <div class="key" data-key="r">R</div>
+            <div class="key" data-key="t">T</div>
+            <div class="key" data-key="y">Y</div>
+            <div class="key" data-key="u">U</div>
+            <div class="key" data-key="i">I</div>
+            <div class="key" data-key="o">O</div>
+            <div class="key" data-key="p">P</div>
+            <div class="key" data-key="[">[</div>
+            <div class="key" data-key="]">]</div>
+            <div class="key" data-key="\">\</div>
+          </div>
+          <!-- Keyboard Row 3 -->
+          <div class="keyboard-row">
+            <div class="key spec-key caps" data-key="caps">Caps</div>
+            <div class="key" data-key="a">A</div>
+            <div class="key" data-key="s">S</div>
+            <div class="key" data-key="d">D</div>
+            <div class="key" data-key="f">F</div>
+            <div class="key" data-key="g">G</div>
+            <div class="key" data-key="h">H</div>
+            <div class="key" data-key="j">J</div>
+            <div class="key" data-key="k">K</div>
+            <div class="key" data-key="l">L</div>
+            <div class="key" data-key=";">;</div>
+            <div class="key" data-key="'">'</div>
+            <div class="key spec-key enter" data-key="enter">Enter</div>
+          </div>
+          <!-- Keyboard Row 4 -->
+          <div class="keyboard-row">
+            <div class="key spec-key lshift" data-key="shift">Shift</div>
+            <div class="key" data-key="z">Z</div>
+            <div class="key" data-key="x">X</div>
+            <div class="key" data-key="c">C</div>
+            <div class="key" data-key="v">V</div>
+            <div class="key" data-key="b">B</div>
+            <div class="key" data-key="n">N</div>
+            <div class="key" data-key="m">M</div>
+            <div class="key" data-key=",">,</div>
+            <div class="key" data-key=".">.</div>
+            <div class="key" data-key="/">/</div>
+            <div class="key spec-key rshift" data-key="shift">Shift</div>
+          </div>
+          <!-- Keyboard Row 5 -->
+          <div class="keyboard-row">
+            <div class="key spec-key ctrl" data-key="ctrl">Ctrl</div>
+            <div class="key spec-key win" data-key="win">Win</div>
+            <div class="key spec-key alt" data-key="alt">Alt</div>
+            <div class="key space" data-key=" ">Space</div>
+            <div class="key spec-key alt" data-key="alt">Alt</div>
+            <div class="key spec-key win" data-key="fn">Fn</div>
+            <div class="key spec-key ctrl" data-key="ctrl">Ctrl</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Achievements Panel -->
+      <section class="achievements-panel glass-card" aria-label="Unlocked badges list">
+        <h2 class="panel-title">🏆 Achieved Badges</h2>
+        <div id="badgesGrid" class="badges-grid">
+          <!-- Dynamically populated badge cards -->
+        </div>
+      </section>
+
+      <!-- History Table & Exports Panel -->
+      <section class="history-panel glass-card" aria-label="Typing test history log">
+        <div class="panel-header">
+          <h2 class="panel-title">📅 Test History Log</h2>
+          <div class="export-options">
+            <button id="exportCsvBtn" class="btn btn-sm btn-outline">CSV</button>
+            <button id="exportJsonBtn" class="btn btn-sm btn-outline">JSON</button>
+            <button id="exportPdfBtn" class="btn btn-sm btn-outline">PDF Report</button>
+          </div>
+        </div>
+        
+        <div class="history-search-bar">
+          <input type="text" id="historySearch" placeholder="🔍 Search logs (paragraph, difficulty)..." />
+          <select id="historySort">
+            <option value="date-desc">Newest First</option>
+            <option value="date-asc">Oldest First</option>
+            <option value="wpm-desc">Speed: High to Low</option>
+            <option value="wpm-asc">Speed: Low to High</option>
+            <option value="acc-desc">Accuracy: High to Low</option>
+            <option value="acc-asc">Accuracy: Low to High</option>
+          </select>
+          <button id="clearHistoryBtn" class="btn btn-sm btn-danger">Clear All History</button>
+        </div>
+
+        <ul id="historyList" class="history-list">
+          <!-- Dynamically populated items -->
+        </ul>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer glass-card">
+      <p>&copy; 2026 Antigravity Speed Typer. Designed for high performance and visual excellence.</p>
+    </footer>
+  </div>
+
+  <!-- ======================== -->
+  <!-- MODAL WINDOWS TEMPLATES  -->
+  <!-- ======================== -->
+
+  <!-- Certificate Modal -->
+  <div id="certificateModal" class="modal hidden" aria-modal="true" role="dialog">
+    <div class="modal-content certificate-modal-content glass-card">
+      <span id="closeCertBtn" class="close-modal-btn" aria-label="Close modal">&times;</span>
+      <h2>📜 Generate Typing Certificate</h2>
+      <p class="modal-tip">Enter your name to generate a custom printable certificate of achievement.</p>
+      
+      <div class="modal-input-row">
+        <label for="certNameInput">Your Name:</label>
+        <input type="text" id="certNameInput" placeholder="John Doe" maxlength="30" />
+      </div>
+
+      <div class="canvas-certificate-wrapper">
+        <canvas id="certificateCanvas" width="1200" height="840"></canvas>
+      </div>
+
+      <div class="modal-actions">
+        <button id="downloadCertBtn" class="btn btn-primary glow-btn">Download Certificate (PDF)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaderboard Modal -->
+  <div id="leaderboardModal" class="modal hidden" aria-modal="true" role="dialog">
+    <div class="modal-content leaderboard-modal-content glass-card">
+      <span id="closeLeaderboardBtn" class="close-modal-btn" aria-label="Close modal">&times;</span>
+      <h2>🏆 Global Leaderboard (Local)</h2>
+      <p class="modal-tip">Top 10 highest-speed typing runs ever recorded on this browser.</p>
+      
+      <ul id="leaderboardList" class="leaderboard-list">
+        <!-- Rendered lists -->
+      </ul>
+    </div>
+  </div>
+
+  <!-- Keyboard Shortcuts Modal -->
+  <div id="shortcutsModal" class="modal hidden" aria-modal="true" role="dialog">
+    <div class="modal-content shortcuts-modal-content glass-card">
+      <span id="closeShortcutsBtn" class="close-modal-btn" aria-label="Close modal">&times;</span>
+      <h2>⌨️ Keyboard Shortcuts</h2>
+      <table class="shortcuts-table">
+        <thead>
+          <tr>
+            <th>Action</th>
+            <th>Shortcut</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Start typing test</td>
+            <td><kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>Pause / Resume test</td>
+            <td><kbd>Escape</kbd></td>
+          </tr>
+          <tr>
+            <td>Restart test (fresh paragraph)</td>
+            <td><kbd>Ctrl</kbd> + <kbd>R</kbd> or <kbd>Tab</kbd> + <kbd>Enter</kbd></td>
+          </tr>
+          <tr>
+            <td>Focus typing field</td>
+            <td>Click anywhere inside paragraph field</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Main ES App script -->
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>
