@@ -6,7 +6,7 @@ export const themeManager = {
   currentTheme: "dark",
 
   init() {
-    this.currentTheme = storage.get("agTyperTheme", "dark");
+    this.currentTheme = storage.get("typePlayTheme", "dark");
     this.applyTheme(this.currentTheme);
   },
 
@@ -21,7 +21,7 @@ export const themeManager = {
     // Add the selected theme class
     document.body.classList.add(`theme-${theme}`);
     this.currentTheme = theme;
-    storage.set("agTyperTheme", theme);
+    storage.set("typePlayTheme", theme);
   },
 
   setTheme(theme) {

@@ -26,7 +26,7 @@ export const profileManager = {
   onLevelUp: null, // Callback function (level)
 
   init() {
-    const data = storage.get("agTyperUserProfile", DEFAULT_PROFILE);
+    const data = storage.get("typePlayUserProfile", DEFAULT_PROFILE);
     this.xp = data.xp ?? 0;
     this.coins = data.coins ?? 0;
     this.level = data.level ?? 1;
@@ -40,7 +40,7 @@ export const profileManager = {
   },
 
   save() {
-    storage.set("agTyperUserProfile", {
+    storage.set("typePlayUserProfile", {
       xp: this.xp,
       coins: this.coins,
       level: this.level,

@@ -93,6 +93,8 @@ const dom = {
   restartBtn: document.getElementById("restartBtn"),
   retestBtn: document.getElementById("retestBtn"),
   replayMistakesBtn: document.getElementById("replayMistakesBtn"),
+  heroStartBtn: document.getElementById("heroStartBtn"),
+  heroPracticeBtn: document.getElementById("heroPracticeBtn"),
   
   // Finger Guide
   nextKeyGuide: document.getElementById("nextKeyGuide"),
@@ -248,6 +250,22 @@ function setupEventListeners() {
   dom.restartBtn.addEventListener("click", () => { soundEngine.play("btnClick"); restartTest(); });
   dom.retestBtn.addEventListener("click", () => { soundEngine.play("btnClick"); resetTest(); });
   dom.replayMistakesBtn.addEventListener("click", () => { soundEngine.play("btnClick"); replayMistakes(); });
+  
+  // Hero Section CTA Buttons
+  if (dom.heroStartBtn) {
+    dom.heroStartBtn.addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      dom.typingContainer.scrollIntoView({ behavior: "smooth" });
+      startTest();
+    });
+  }
+  if (dom.heroPracticeBtn) {
+    dom.heroPracticeBtn.addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      dom.typingContainer.scrollIntoView({ behavior: "smooth" });
+      typingEngine.focus();
+    });
+  }
   
   // Results Overlay Controls
   dom.resPracticeAgainBtn.addEventListener("click", () => {
@@ -959,7 +977,7 @@ function handleTestFinished() {
   // Check daily challenge completion
   if (activeChallengeType !== null) {
     const todayStr = getLocalDateStr(new Date());
-    const challengeKey = `agTyperChallenge-${todayStr}-${activeChallengeType}`;
+    const challengeKey = `typePlayChallenge-${todayStr}-${activeChallengeType}`;
     
     if (!storage.get(challengeKey, false)) {
       storage.set(challengeKey, true);
@@ -1097,17 +1115,17 @@ function applyEquippedCursor(cursorId) {
 
 // Merge Heatmap Data
 function mergeToCumulativeHeatmap(currentRunMap) {
-  const cumulative = storage.get("agTyperHeatmap", {});
+  const cumulative = storage.get("typePlayHeatmap", {});
   for (let key in currentRunMap) {
     cumulative[key] = (cumulative[key] || 0) + currentRunMap[key];
   }
-  storage.set("agTyperHeatmap", cumulative);
+  storage.set("typePlayHeatmap", cumulative);
 }
 
 // Achievements Renderer
 function renderAchievements() {
   const records = historyManager.getRecords();
-  const unlocked = storage.get("agTyperBadges", []);
+  const unlocked = storage.get("typePlayBadges", []);
   
   const streak = calculateStreak(records);
   const bestWpm = records.length > 0 ? Math.max(...records.map((r) => r.wpm)) : 0;
@@ -1153,7 +1171,7 @@ function renderAchievements() {
   });
 
   if (newlyUnlocked) {
-    storage.set("agTyperBadges", nextUnlockedList);
+    storage.set("typePlayBadges", nextUnlockedList);
   }
 }
 
@@ -1321,11 +1339,11 @@ function renderHistory() {
 
 // Certificate Modal Coordinator
 function openCertificateModal(record) {
-  const savedName = storage.get("agTyperUserName", "");
+  const savedName = storage.get("typePlayUserName", "");
   dom.certNameInput.value = savedName;
 
   const drawAndDisplay = () => {
-    storage.set("agTyperUserName", dom.certNameInput.value);
+    storage.set("typePlayUserName", dom.certNameInput.value);
     certificateGenerator.drawCertificate(
       dom.certificateCanvas,
       dom.certNameInput.value,
@@ -1346,15 +1364,15 @@ function openCertificateModal(record) {
 
 // Leaderboard Manager
 function checkLeaderboardEligibility(wpm, accuracy) {
-  const leaderboard = storage.get("agTyperLeaderboard", []);
+  const leaderboard = storage.get("typePlayLeaderboard", []);
   const isEligible = leaderboard.length < 10 || wpm > leaderboard[leaderboard.length - 1].wpm;
   
   if (isEligible) {
     setTimeout(() => {
-      const name = prompt("🏆 New High Score! Enter your name for the Leaderboard:", storage.get("agTyperUserName", ""));
+      const name = prompt("🏆 New High Score! Enter your name for the Leaderboard:", storage.get("typePlayUserName", ""));
       if (name && name.trim()) {
         const username = name.trim();
-        storage.set("agTyperUserName", username);
+        storage.set("typePlayUserName", username);
         
         leaderboard.push({
           name: username,
@@ -1365,7 +1383,7 @@ function checkLeaderboardEligibility(wpm, accuracy) {
         });
         
         leaderboard.sort((a, b) => b.wpm - a.wpm || b.accuracy - a.accuracy);
-        storage.set("agTyperLeaderboard", leaderboard.slice(0, 10));
+        storage.set("typePlayLeaderboard", leaderboard.slice(0, 10));
         
         renderLeaderboardUI();
         dom.leaderboardModal.classList.remove("hidden");
@@ -1375,7 +1393,7 @@ function checkLeaderboardEligibility(wpm, accuracy) {
 }
 
 function renderLeaderboardUI() {
-  const leaderboard = storage.get("agTyperLeaderboard", []);
+  const leaderboard = storage.get("typePlayLeaderboard", []);
   dom.leaderboardList.innerHTML = "";
   
   if (leaderboard.length === 0) {
@@ -1490,7 +1508,7 @@ function renderChallenges() {
   const chalList = ["para", "code", "number", "symbol"];
   
   chalList.forEach((chal) => {
-    const challengeKey = `agTyperChallenge-${todayStr}-${chal}`;
+    const challengeKey = `typePlayChallenge-${todayStr}-${chal}`;
     const completed = storage.get(challengeKey, false);
     const card = document.getElementById(`challenge-${chal}`);
     

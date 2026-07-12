@@ -1,4 +1,4 @@
-const CACHE_NAME = "ag-typer-v1";
+const CACHE_NAME = "typing-gaming-v2";
 const ASSETS = [
   "./",
   "./index.html",

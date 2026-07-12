@@ -12,11 +12,11 @@ function getAudioContext() {
 }
 
 export const soundEngine = {
-  enabled: localStorage.getItem("agTyperSound") !== "false",
+  enabled: localStorage.getItem("typePlaySound") !== "false",
   
   toggle() {
     this.enabled = !this.enabled;
-    localStorage.setItem("agTyperSound", this.enabled);
+    localStorage.setItem("typePlaySound", this.enabled);
     return this.enabled;
   },
 

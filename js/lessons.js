@@ -145,16 +145,16 @@ export const lessonsManager = {
   levelScores: {},     // { levelId: { maxWpm: X, maxAcc: Y } }
 
   init() {
-    this.unlockedLevels = storage.get("agTyperUnlockedLevels", [1]);
-    this.completedLevels = storage.get("agTyperCompletedLevels", []);
-    this.levelScores = storage.get("agTyperLevelScores", {});
+    this.unlockedLevels = storage.get("typePlayUnlockedLevels", [1]);
+    this.completedLevels = storage.get("typePlayCompletedLevels", []);
+    this.levelScores = storage.get("typePlayLevelScores", {});
     this.save();
   },
 
   save() {
-    storage.set("agTyperUnlockedLevels", this.unlockedLevels);
-    storage.set("agTyperCompletedLevels", this.completedLevels);
-    storage.set("agTyperLevelScores", this.levelScores);
+    storage.set("typePlayUnlockedLevels", this.unlockedLevels);
+    storage.set("typePlayCompletedLevels", this.completedLevels);
+    storage.set("typePlayLevelScores", this.levelScores);
   },
 
   getLevels() {
