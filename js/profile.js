@@ -9,7 +9,8 @@ const DEFAULT_PROFILE = {
   selectedTheme: "dark",
   unlockedAvatars: ["alien", "fox"],
   unlockedCursors: ["line"],
-  unlockedThemes: ["light", "dark", "blue"]
+  unlockedThemes: ["light", "dark", "blue"],
+  unlockedBadges: []
 };
 
 export const profileManager = {
@@ -22,6 +23,8 @@ export const profileManager = {
   unlockedAvatars: ["alien", "fox"],
   unlockedCursors: ["line"],
   unlockedThemes: ["light", "dark", "blue"],
+  unlockedBadges: [],
+  selectedBadge: "",
   
   onLevelUp: null, // Callback function (level)
 
@@ -36,6 +39,8 @@ export const profileManager = {
     this.unlockedAvatars = data.unlockedAvatars ?? ["alien", "fox"];
     this.unlockedCursors = data.unlockedCursors ?? ["line"];
     this.unlockedThemes = data.unlockedThemes ?? ["light", "dark", "blue"];
+    this.unlockedBadges = data.unlockedBadges ?? [];
+    this.selectedBadge = data.selectedBadge ?? "";
     this.save();
   },
 
@@ -49,7 +54,9 @@ export const profileManager = {
       selectedTheme: this.selectedTheme,
       unlockedAvatars: this.unlockedAvatars,
       unlockedCursors: this.unlockedCursors,
-      unlockedThemes: this.unlockedThemes
+      unlockedThemes: this.unlockedThemes,
+      unlockedBadges: this.unlockedBadges,
+      selectedBadge: this.selectedBadge
     });
   },
 
@@ -110,6 +117,16 @@ export const profileManager = {
     } else if (type === "avatar") {
       if (this.unlockedAvatars.includes(itemId)) return true;
       this.unlockedAvatars.push(itemId);
+    } else if (type === "badge") {
+      if (this.unlockedBadges.includes(itemId)) return true;
+      this.unlockedBadges.push(itemId);
+      
+      // Also add to achievements list for badges grid integration
+      const badges = storage.get("typePlayBadges", []);
+      if (!badges.includes(itemId)) {
+        badges.push(itemId);
+        storage.set("typePlayBadges", badges);
+      }
     } else {
       return false;
     }
@@ -130,6 +147,9 @@ export const profileManager = {
     } else if (type === "avatar") {
       if (!this.unlockedAvatars.includes(itemId)) return false;
       this.selectedAvatar = itemId;
+    } else if (type === "badge") {
+      if (!this.unlockedBadges.includes(itemId)) return false;
+      this.selectedBadge = itemId;
     } else {
       return false;
     }

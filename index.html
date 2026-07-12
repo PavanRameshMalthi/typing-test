@@ -36,6 +36,11 @@
     <!-- Header -->
     <header class="main-header glass-card">
       <div class="logo-area">
+        <button id="navHamburger" class="hamburger-btn" aria-label="Toggle Navigation Drawer" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
         <img src="assets/logo.svg" alt="TypePlay Logo" class="header-logo" />
         <div>
           <h1>TypePlay</h1>
@@ -70,13 +75,13 @@
     </header>
 
     <!-- Platform Navigation Tabs -->
-    <nav class="platform-tabs glass-card">
-      <button class="tab-btn active" data-tab="practice">🎯 Practice</button>
-      <button class="tab-btn" data-tab="lessons">📖 Levels</button>
-      <button class="tab-btn" data-tab="games">🎮 Games</button>
-      <button class="tab-btn" data-tab="challenges">📅 Challenges</button>
-      <button class="tab-btn" data-tab="shop">🛍️ Shop</button>
-      <button class="tab-btn" data-tab="stats">📊 Stats & History</button>
+    <nav class="platform-tabs glass-card" role="tablist" aria-label="Main Navigation">
+      <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab-practice" tabindex="0" data-tab="practice">🎯 Practice</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-lessons" tabindex="0" data-tab="lessons">📖 Levels</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-games" tabindex="0" data-tab="games">🎮 Games</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-challenges" tabindex="0" data-tab="challenges">📅 Challenges</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-shop" tabindex="0" data-tab="shop">🛍️ Shop</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-stats" tabindex="0" data-tab="stats">📊 Stats & History</button>
     </nav>
 
     <!-- Main Platform Grid Dashboard -->
@@ -502,9 +507,17 @@
       <!-- ==================== TAB: CHALLENGES ==================== -->
       <div class="tab-content hidden" id="tab-challenges">
         <section class="challenges-panel glass-card">
-          <h2 class="panel-title">📅 Daily Challenges</h2>
-          <p class="panel-subtitle">Resetting daily. Complete these runs to earn bonus XP and coins.</p>
+          <div class="challenges-header-row">
+            <div>
+              <h2 class="panel-title">📅 Challenges Arena</h2>
+              <p class="panel-subtitle">Complete these custom runs to earn bonus XP and coins.</p>
+            </div>
+            <div class="time-remaining-bubble" id="challengeTimeRemaining">
+              ⏱️ Time Left Today: <span id="challengeCountdown">00h 00m</span>
+            </div>
+          </div>
           
+          <div class="challenges-section-title">🔥 Daily Challenges</div>
           <div class="challenges-grid" id="challengesList">
             <div class="challenge-card glass-card" id="challenge-para">
               <span class="chal-icon">📝</span>
@@ -535,19 +548,42 @@
               <button class="btn btn-primary btn-challenge-play" data-chal="symbol">Play Run</button>
             </div>
           </div>
+
+          <div class="challenges-section-title mt-4">🏆 Weekly Marathon</div>
+          <div class="weekly-challenge-container glass-card">
+            <div class="weekly-chal-info">
+              <span class="weekly-chal-badge">WEEKLY SPECIAL</span>
+              <h3>The Keyboard Master Marathon</h3>
+              <p>Complete a grueling 500-word paragraph with at least 95% accuracy to prove your touch typing endurance!</p>
+              <div class="weekly-chal-rewards">
+                <span>🎁 +500 XP</span>
+                <span>🪙 +250 Coins</span>
+                <span>🏆 "Endurance" Badge</span>
+              </div>
+            </div>
+            <button id="startWeeklyChallengeBtn" class="btn btn-success btn-start glow-btn">Start Challenge</button>
+          </div>
         </section>
       </div>
 
       <!-- ==================== TAB: SHOP ==================== -->
       <div class="tab-content hidden" id="tab-shop">
         <section class="shop-panel glass-card">
-          <h2 class="panel-title">🛍️ Rewards & Theme Shop</h2>
-          <p class="panel-subtitle">Deduct coins to purchase and equip customization items.</p>
+          <div class="shop-header-row">
+            <div>
+              <h2 class="panel-title">🛍️ Rewards & Theme Shop</h2>
+              <p class="panel-subtitle">Deduct coins to purchase and equip customization items.</p>
+            </div>
+            <div class="shop-balance-display">
+              Coin Balance: <span class="coins-balance">🪙 <span id="shopCoinsText">0</span></span>
+            </div>
+          </div>
           
           <div class="shop-nav-tabs">
             <button class="btn btn-outline shop-category-btn active" data-category="themes">🎨 Themes</button>
             <button class="btn btn-outline shop-category-btn" data-category="cursors">🖱️ Cursors</button>
             <button class="btn btn-outline shop-category-btn" data-category="avatars">👤 Avatars</button>
+            <button class="btn btn-outline shop-category-btn" data-category="badges">🏆 Badges</button>
           </div>
 
           <div class="shop-items-grid" id="shopItemsGrid">
@@ -589,6 +625,18 @@
             <div class="dash-card">
               <h3>Total Tests</h3>
               <p id="totalTests">0</p>
+            </div>
+            <div class="dash-card">
+              <h3>Total Chars Typed</h3>
+              <p id="totalCharsTyped">0</p>
+            </div>
+            <div class="dash-card">
+              <h3>Total Words Typed</h3>
+              <p id="totalWordsTyped">0</p>
+            </div>
+            <div class="dash-card">
+              <h3>Badges Earned</h3>
+              <p id="totalBadgesEarned">0</p>
             </div>
           </div>
         </section>

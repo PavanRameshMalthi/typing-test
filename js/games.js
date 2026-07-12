@@ -15,6 +15,7 @@ export const typingGames = {
   ctx: null,
   activeGame: null, // "fruitCatch", "spaceShooter", "rocketRace", "carRacing", "zombieEscape"
   isRunning: false,
+  isPaused: false,
   score: 0,
   lives: 3,
   level: 1,
@@ -44,6 +45,7 @@ export const typingGames = {
   onGameOver: null, // Callback when game completes (score, coinsEarned, xpEarned)
 
   init(canvasElement) {
+    if (!canvasElement) return;
     this.canvas = canvasElement;
     this.ctx = canvasElement.getContext("2d");
     this.resetState();
@@ -53,6 +55,7 @@ export const typingGames = {
     this.score = 0;
     this.lives = 3;
     this.level = 1;
+    this.isPaused = false;
     this.entities = [];
     this.particles = [];
     this.bullets = [];
@@ -85,6 +88,7 @@ export const typingGames = {
     this.activeGame = gameType;
     this.resetState();
     this.isRunning = true;
+    this.isPaused = false;
     
     // Initialize specific game parameters
     const w = this.canvas.width;
@@ -111,6 +115,7 @@ export const typingGames = {
 
   stopGame() {
     this.isRunning = false;
+    this.isPaused = false;
     if (this.loopId) {
       cancelAnimationFrame(this.loopId);
       this.loopId = null;
@@ -118,8 +123,24 @@ export const typingGames = {
     this.resetState();
   },
 
+  pauseGame() {
+    if (!this.isRunning || this.isPaused) return;
+    this.isPaused = true;
+    if (this.loopId) {
+      cancelAnimationFrame(this.loopId);
+      this.loopId = null;
+    }
+  },
+
+  resumeGame() {
+    if (!this.isRunning || !this.isPaused) return;
+    this.isPaused = false;
+    this.lastTime = performance.now();
+    this.loopId = requestAnimationFrame((t) => this.loop(t));
+  },
+
   loop(timestamp) {
-    if (!this.isRunning) return;
+    if (!this.isRunning || this.isPaused) return;
 
     const dt = (timestamp - this.lastTime) / 1000; // seconds
     this.lastTime = timestamp;

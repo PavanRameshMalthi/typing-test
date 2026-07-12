@@ -143,7 +143,7 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  pointer-events: none;
+  pointer-events: none !important;
   z-index: -1;
   overflow: hidden;
   opacity: 0.15;
@@ -156,6 +156,7 @@ body.theme-amoled .background-gradients {
   border-radius: 50%;
   filter: blur(100px);
   animation: floatBlobs 20s infinite alternate;
+  pointer-events: none !important;
 }
 .blob-1 {
   top: -10%;
@@ -1323,6 +1324,20 @@ kbd {
 .tab-content.hidden {
   display: none !important;
 }
+.tab-content:not(.hidden) {
+  animation: tabFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes tabFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
 
 /* 2. User Profile Widget */
 .profile-banner-widget {
@@ -2214,5 +2229,191 @@ body.theme-light .hero-section {
   .hero-actions .btn {
     width: 100%;
   }
+}
+
+/* ==========================================================================
+   HAMBURGER & MOBILE DRAWER STYLING
+   ========================================================================== */
+.hamburger-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 26px;
+  height: 18px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 1100;
+}
+
+.hamburger-btn span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background-color: #ffffff;
+  border-radius: 2px;
+  transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease;
+}
+
+body.theme-light .hamburger-btn span {
+  background-color: #0f172a;
+}
+
+/* Hamburger open state */
+.hamburger-btn.open span:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+
+.hamburger-btn.open span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger-btn.open span:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+}
+
+@media (max-width: 992px) {
+  .hamburger-btn {
+    display: flex;
+    margin-right: 12px;
+  }
+  
+  .platform-tabs {
+    position: absolute;
+    top: 90px;
+    left: 20px;
+    right: 20px;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px !important;
+    background: rgba(18, 18, 32, 0.95) !important;
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    transform: translateY(-20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  }
+
+  body.theme-light .platform-tabs {
+    background: rgba(255, 255, 255, 0.98) !important;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+  }
+  
+  .platform-tabs.open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .platform-tabs .tab-btn {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 12px 16px;
+  }
+}
+
+/* ==========================================================================
+   CHALLENGES & SHOP HEADER & WIDGET ENHANCEMENTS
+   ========================================================================== */
+.challenges-header-row, .shop-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 16px;
+}
+
+.time-remaining-bubble {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  padding: 8px 16px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.challenges-section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 16px;
+}
+
+body.theme-light .challenges-section-title {
+  color: #0f172a;
+}
+
+.weekly-challenge-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding: 24px !important;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.weekly-chal-info {
+  flex: 1;
+  min-width: 280px;
+}
+
+.weekly-chal-badge {
+  display: inline-block;
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+}
+
+.weekly-chal-info h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.weekly-chal-info p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.weekly-chal-rewards {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.weekly-chal-rewards span {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 6px;
+  color: #10b981;
+}
+
+.shop-balance-display {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.mt-4 {
+  margin-top: 24px;
 }
 

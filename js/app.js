@@ -164,7 +164,17 @@ const dom = {
   exportPdfBtn: document.getElementById("exportPdfBtn"),
   
   // Achievements
-  badgesGrid: document.getElementById("badgesGrid")
+  badgesGrid: document.getElementById("badgesGrid"),
+  
+  // Hamburger and new widgets
+  navHamburger: document.getElementById("navHamburger"),
+  platformTabsContainer: document.querySelector(".platform-tabs"),
+  challengeCountdown: document.getElementById("challengeCountdown"),
+  shopCoinsText: document.getElementById("shopCoinsText"),
+  startWeeklyChallengeBtn: document.getElementById("startWeeklyChallengeBtn"),
+  totalCharsTyped: document.getElementById("totalCharsTyped"),
+  totalWordsTyped: document.getElementById("totalWordsTyped"),
+  totalBadgesEarned: document.getElementById("totalBadgesEarned")
 };
 
 // Application State
@@ -182,19 +192,18 @@ let isTestActive = false; // BUG 5 & BUG 4 DUPLICATE PREVENTER
 
 // Initialize Application
 document.addEventListener("DOMContentLoaded", () => {
-  themeManager.init();
-  historyManager.init();
-  profileManager.init();
-  lessonsManager.init();
-  typingGames.init(dom.gameCanvas);
+  try { themeManager.init(); } catch(e) { console.error("themeManager.init failed:", e); }
+  try { historyManager.init(); } catch(e) { console.error("historyManager.init failed:", e); }
+  try { profileManager.init(); } catch(e) { console.error("profileManager.init failed:", e); }
+  try { lessonsManager.init(); } catch(e) { console.error("lessonsManager.init failed:", e); }
+  try { typingGames.init(dom.gameCanvas); } catch(e) { console.error("typingGames.init failed:", e); }
   
   // Render initial profile state
-  updateProfileUI();
-  applyEquippedCursor(profileManager.selectedCursor);
-  themeManager.setTheme(profileManager.selectedTheme);
+  try { updateProfileUI(); } catch(e) { console.error("updateProfileUI failed:", e); }
+  try { themeManager.setTheme(profileManager.selectedTheme); } catch(e) { console.error("themeManager.setTheme failed:", e); }
 
   // Setup sound button toggle state
-  updateSoundButtonUI();
+  try { updateSoundButtonUI(); } catch(e) { console.error("updateSoundButtonUI failed:", e); }
 
   // Initialize modular controllers
   timer = new Timer(handleTimerTick, handleTimerComplete);
@@ -216,184 +225,283 @@ document.addEventListener("DOMContentLoaded", () => {
     onCombo: handleComboUpdate
   });
 
-  // Load first paragraph
-  loadNextParagraph();
-  
-  // Render dashboards, structures
-  updateDashboard();
-  chartManager.updateChart(historyManager.getRecords());
-  renderHistory();
-  renderAchievements();
-  renderLevelsProgressionHUD();
-  renderLessons();
-  renderChallenges();
-  renderShop("themes");
+  try { applyEquippedCursor(profileManager.selectedCursor); } catch(e) { console.error("applyEquippedCursor failed:", e); }
 
-  // Event Binding
+  // Load first paragraph
+  try { loadNextParagraph(); } catch(e) { console.error("loadNextParagraph failed:", e); }
+  
+  // Render dashboards, structures (non-critical — must not block event binding)
+  try { updateDashboard(); } catch(e) { console.error("updateDashboard failed:", e); }
+  try { chartManager.updateChart(historyManager.getRecords()); } catch(e) { console.error("chartManager.updateChart failed:", e); }
+  try { renderHistory(); } catch(e) { console.error("renderHistory failed:", e); }
+  try { renderAchievements(); } catch(e) { console.error("renderAchievements failed:", e); }
+  try { renderLevelsProgressionHUD(); } catch(e) { console.error("renderLevelsProgressionHUD failed:", e); }
+  try { renderLessons(); } catch(e) { console.error("renderLessons failed:", e); }
+  try { renderChallenges(); } catch(e) { console.error("renderChallenges failed:", e); }
+  try { renderShop("themes"); } catch(e) { console.error("renderShop failed:", e); }
+
+  // Event Binding — MUST always execute
   setupEventListeners();
+
+  // Handle initial page load hash routing
+  const initialHash = window.location.hash.substring(1);
+  const validTabs = ["practice", "lessons", "games", "challenges", "shop", "stats"];
+  if (initialHash && validTabs.includes(initialHash)) {
+    switchTab(initialHash, false);
+  } else {
+    switchTab("practice", false);
+  }
 });
 
 // Configure Event Listeners
 function setupEventListeners() {
-  // Navigation Tabs
+  // Navigation Tabs with SPA Routing
   dom.tabs.forEach((tab) => {
     tab.addEventListener("click", () => {
       soundEngine.play("btnClick");
-      switchTab(tab.getAttribute("data-tab"));
+      
+      // Close hamburger drawer if open on mobile
+      if (dom.platformTabsContainer) {
+        dom.platformTabsContainer.classList.remove("open");
+      }
+      if (dom.navHamburger) {
+        dom.navHamburger.classList.remove("open");
+        dom.navHamburger.setAttribute("aria-expanded", "false");
+      }
+      
+      switchTab(tab.getAttribute("data-tab"), true);
     });
   });
 
+  // Hamburger Drawer Menu Click Handler
+  if (dom.navHamburger) {
+    dom.navHamburger.addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      let isOpen = false;
+      if (dom.platformTabsContainer) {
+        isOpen = dom.platformTabsContainer.classList.toggle("open");
+      }
+      dom.navHamburger.classList.toggle("open");
+      dom.navHamburger.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    });
+  }
+
+  // Browser Navigation SPA Popstate Listener
+  window.addEventListener("popstate", (event) => {
+    if (event.state && event.state.tab) {
+      switchTab(event.state.tab, false);
+    } else {
+      const hash = window.location.hash.substring(1);
+      if (hash) {
+        switchTab(hash, false);
+      } else {
+        switchTab("practice", false);
+      }
+    }
+  });
+
+  // Weekly Marathon Challenge Start Handler
+  if (dom.startWeeklyChallengeBtn) {
+    dom.startWeeklyChallengeBtn.addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      activeChallengeType = "weekly-marathon";
+      currentParagraph = "The keyboard is your primary tool as a developer and digital creator. To master it, you must practice regularly, maintaining both high accuracy and speed. This marathon test is designed to push your limits, forcing you to maintain focus across five hundred words of content. Keep your shoulders relaxed, wrists slightly elevated, and tap each key smoothly without looking down. Every keypress gets you closer to perfect rhythm. Speed will naturally follow correct finger placement. Let your muscle memory guide you. Relax, breathe deeply, and let your fingers fly across the keys with absolute precision.";
+      difficulty = "hard";
+      duration = 300; // 5 minute endurance run
+      
+      switchTab("practice", true);
+      resetTest();
+      startTest();
+    });
+  }
+
   // Controls
-  dom.startBtn.addEventListener("click", () => { soundEngine.play("btnClick"); startTest(); });
-  dom.pauseBtn.addEventListener("click", () => { soundEngine.play("btnClick"); pauseTest(); });
-  dom.resumeBtn.addEventListener("click", () => { soundEngine.play("btnClick"); resumeTest(); });
-  dom.restartBtn.addEventListener("click", () => { soundEngine.play("btnClick"); restartTest(); });
-  dom.retestBtn.addEventListener("click", () => { soundEngine.play("btnClick"); resetTest(); });
-  dom.replayMistakesBtn.addEventListener("click", () => { soundEngine.play("btnClick"); replayMistakes(); });
+  if (dom.startBtn) dom.startBtn.addEventListener("click", () => { soundEngine.play("btnClick"); startTest(); });
+  if (dom.pauseBtn) dom.pauseBtn.addEventListener("click", () => { soundEngine.play("btnClick"); pauseTest(); });
+  if (dom.resumeBtn) dom.resumeBtn.addEventListener("click", () => { soundEngine.play("btnClick"); resumeTest(); });
+  if (dom.restartBtn) dom.restartBtn.addEventListener("click", () => { soundEngine.play("btnClick"); restartTest(); });
+  if (dom.retestBtn) dom.retestBtn.addEventListener("click", () => { soundEngine.play("btnClick"); resetTest(); });
+  if (dom.replayMistakesBtn) dom.replayMistakesBtn.addEventListener("click", () => { soundEngine.play("btnClick"); replayMistakes(); });
   
   // Hero Section CTA Buttons
-  if (dom.heroStartBtn) {
+  if (dom.heroStartBtn && dom.typingContainer) {
     dom.heroStartBtn.addEventListener("click", () => {
       soundEngine.play("btnClick");
       dom.typingContainer.scrollIntoView({ behavior: "smooth" });
       startTest();
     });
   }
-  if (dom.heroPracticeBtn) {
+  if (dom.heroPracticeBtn && dom.typingContainer) {
     dom.heroPracticeBtn.addEventListener("click", () => {
       soundEngine.play("btnClick");
       dom.typingContainer.scrollIntoView({ behavior: "smooth" });
-      typingEngine.focus();
+      if (typingEngine) typingEngine.focus();
     });
   }
   
   // Results Overlay Controls
-  dom.resPracticeAgainBtn.addEventListener("click", () => {
-    soundEngine.play("btnClick");
-    restartTest();
-    startTest();
-  });
-  dom.resReplayMistakesBtn.addEventListener("click", () => {
-    soundEngine.play("btnClick");
-    replayMistakes();
-  });
-  dom.resCertBtn.addEventListener("click", () => {
-    soundEngine.play("btnClick");
-    if (lastTestStats) {
-      openCertificateModal(lastTestStats);
-    } else {
-      alert("No completed test record found for this session.");
-    }
-  });
+  if (dom.resPracticeAgainBtn) {
+    dom.resPracticeAgainBtn.addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      restartTest();
+      startTest();
+    });
+  }
+  if (dom.resReplayMistakesBtn) {
+    dom.resReplayMistakesBtn.addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      replayMistakes();
+    });
+  }
+  if (dom.resCertBtn) {
+    dom.resCertBtn.addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      if (lastTestStats) {
+        openCertificateModal(lastTestStats);
+      } else {
+        alert("No completed test record found for this session.");
+      }
+    });
+  }
 
   // Options (Practice Settings)
-  dom.difficultySelect.addEventListener("change", (e) => {
-    soundEngine.play("btnClick");
-    difficulty = e.target.value;
-    if (!isTestActive) loadNextParagraph();
-  });
+  if (dom.difficultySelect) {
+    dom.difficultySelect.addEventListener("change", (e) => {
+      soundEngine.play("btnClick");
+      difficulty = e.target.value;
+      if (!isTestActive) loadNextParagraph();
+    });
+  }
   
-  dom.durationSelect.addEventListener("change", (e) => {
-    soundEngine.play("btnClick");
-    duration = parseInt(e.target.value);
-    resetTimerUI();
-  });
+  if (dom.durationSelect) {
+    dom.durationSelect.addEventListener("change", (e) => {
+      soundEngine.play("btnClick");
+      duration = parseInt(e.target.value);
+      resetTimerUI();
+    });
+  }
 
-  dom.practiceTypeSelect.addEventListener("change", () => {
-    soundEngine.play("btnClick");
-    updatePracticeSubtypes();
-    if (!isTestActive) loadNextParagraph();
-  });
+  if (dom.practiceTypeSelect) {
+    dom.practiceTypeSelect.addEventListener("change", () => {
+      soundEngine.play("btnClick");
+      updatePracticeSubtypes();
+      if (!isTestActive) loadNextParagraph();
+    });
+  }
 
-  dom.practiceSubtypeSelect.addEventListener("change", () => {
-    soundEngine.play("btnClick");
-    if (!isTestActive) loadNextParagraph();
-  });
+  if (dom.practiceSubtypeSelect) {
+    dom.practiceSubtypeSelect.addEventListener("change", () => {
+      soundEngine.play("btnClick");
+      if (!isTestActive) loadNextParagraph();
+    });
+  }
 
   // Modes
-  dom.modePractice.addEventListener("click", () => changeMode("practice"));
-  dom.modeZen.addEventListener("click", () => changeMode("zen"));
+  if (dom.modePractice) dom.modePractice.addEventListener("click", () => changeMode("practice"));
+  if (dom.modeZen) dom.modeZen.addEventListener("click", () => changeMode("zen"));
   
   // Sound
-  dom.soundToggleBtn.addEventListener("click", () => {
-    const enabled = soundEngine.toggle();
-    updateSoundButtonUI();
-    soundEngine.play("btnClick");
-  });
+  if (dom.soundToggleBtn) {
+    dom.soundToggleBtn.addEventListener("click", () => {
+      const enabled = soundEngine.toggle();
+      updateSoundButtonUI();
+      soundEngine.play("btnClick");
+    });
+  }
 
   // Fullscreen
-  dom.fullscreenBtn.addEventListener("click", toggleFullscreen);
+  if (dom.fullscreenBtn) dom.fullscreenBtn.addEventListener("click", toggleFullscreen);
 
   // Custom Paragraph Toggle
-  dom.customInputToggle.addEventListener("click", () => {
-    soundEngine.play("btnClick");
-    dom.customInputCard.classList.toggle("hidden");
-    if (!dom.customInputCard.classList.contains("hidden")) {
-      dom.customInput.focus();
-    }
-  });
+  if (dom.customInputToggle) {
+    dom.customInputToggle.addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      if (dom.customInputCard) {
+        dom.customInputCard.classList.toggle("hidden");
+        if (!dom.customInputCard.classList.contains("hidden") && dom.customInput) {
+          dom.customInput.focus();
+        }
+      }
+    });
+  }
 
-  dom.customInput.addEventListener("input", () => {
-    if (!isTestActive && dom.customInput.value.trim().length > 0) {
-      loadNextParagraph();
-    }
-  });
+  if (dom.customInput) {
+    dom.customInput.addEventListener("input", () => {
+      if (!isTestActive && dom.customInput.value.trim().length > 0) {
+        loadNextParagraph();
+      }
+    });
+  }
 
   // Clicking typingContainer focuses the text area
-  dom.typingContainer.addEventListener("click", () => {
-    if (isTestActive && !timer.isPaused()) {
-      typingEngine.focus();
-    }
-  });
+  if (dom.typingContainer) {
+    dom.typingContainer.addEventListener("click", () => {
+      if (isTestActive && !timer.isPaused() && typingEngine) {
+        typingEngine.focus();
+      }
+    });
+  }
 
-  dom.hiddenInput.addEventListener("input", () => {
-    const elapsed = timer.getTimeElapsed();
-    typingEngine.handleInput(elapsed);
-  });
+  if (dom.hiddenInput) {
+    dom.hiddenInput.addEventListener("input", () => {
+      const elapsed = timer.getTimeElapsed();
+      if (typingEngine) typingEngine.handleInput(elapsed);
+    });
+  }
 
   // History & Exports
-  dom.historySearch.addEventListener("input", renderHistory);
-  dom.historySort.addEventListener("change", renderHistory);
-  dom.clearHistoryBtn.addEventListener("click", () => {
-    if (confirm("Are you sure you want to clear your entire history? This cannot be undone.")) {
-      soundEngine.play("btnClick");
-      historyManager.clearAll();
-      updateDashboard();
-      chartManager.updateChart([]);
-      renderHistory();
-      renderAchievements();
-    }
-  });
+  if (dom.historySearch) dom.historySearch.addEventListener("input", renderHistory);
+  if (dom.historySort) dom.historySort.addEventListener("change", renderHistory);
+  if (dom.clearHistoryBtn) {
+    dom.clearHistoryBtn.addEventListener("click", () => {
+      if (confirm("Are you sure you want to clear your entire history? This cannot be undone.")) {
+        soundEngine.play("btnClick");
+        historyManager.clearAll();
+        updateDashboard();
+        chartManager.updateChart([]);
+        renderHistory();
+        renderAchievements();
+      }
+    });
+  }
 
-  dom.exportCsvBtn.addEventListener("click", () => { soundEngine.play("btnClick"); historyManager.exportCSV(); });
-  dom.exportJsonBtn.addEventListener("click", () => { soundEngine.play("btnClick"); historyManager.exportJSON(); });
-  dom.exportPdfBtn.addEventListener("click", () => { soundEngine.play("btnClick"); historyManager.exportPDF(); });
+  if (dom.exportCsvBtn) dom.exportCsvBtn.addEventListener("click", () => { soundEngine.play("btnClick"); historyManager.exportCSV(); });
+  if (dom.exportJsonBtn) dom.exportJsonBtn.addEventListener("click", () => { soundEngine.play("btnClick"); historyManager.exportJSON(); });
+  if (dom.exportPdfBtn) dom.exportPdfBtn.addEventListener("click", () => { soundEngine.play("btnClick"); historyManager.exportPDF(); });
 
   // Modals
-  dom.closeCertBtn.addEventListener("click", () => dom.certificateModal.classList.add("hidden"));
-  dom.downloadCertBtn.addEventListener("click", () => {
-    soundEngine.play("btnClick");
-    certificateGenerator.downloadPDF(dom.certificateCanvas, dom.certNameInput.value);
-  });
+  if (dom.closeCertBtn) dom.closeCertBtn.addEventListener("click", () => dom.certificateModal && dom.certificateModal.classList.add("hidden"));
+  if (dom.downloadCertBtn) {
+    dom.downloadCertBtn.addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      if (dom.certificateCanvas && dom.certNameInput) {
+        certificateGenerator.downloadPDF(dom.certificateCanvas, dom.certNameInput.value);
+      }
+    });
+  }
 
-  dom.openLeaderboardBtn.addEventListener("click", () => {
-    soundEngine.play("btnClick");
-    renderLeaderboardUI();
-    dom.leaderboardModal.classList.remove("hidden");
-  });
-  dom.closeLeaderboardBtn.addEventListener("click", () => dom.leaderboardModal.classList.add("hidden"));
+  if (dom.openLeaderboardBtn) {
+    dom.openLeaderboardBtn.addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      renderLeaderboardUI();
+      if (dom.leaderboardModal) dom.leaderboardModal.classList.remove("hidden");
+    });
+  }
+  if (dom.closeLeaderboardBtn) dom.closeLeaderboardBtn.addEventListener("click", () => dom.leaderboardModal && dom.leaderboardModal.classList.add("hidden"));
 
-  dom.openShortcutsBtn.addEventListener("click", () => {
-    soundEngine.play("btnClick");
-    dom.shortcutsModal.classList.remove("hidden");
-  });
-  dom.closeShortcutsBtn.addEventListener("click", () => dom.shortcutsModal.classList.add("hidden"));
+  if (dom.openShortcutsBtn) {
+    dom.openShortcutsBtn.addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      if (dom.shortcutsModal) dom.shortcutsModal.classList.remove("hidden");
+    });
+  }
+  if (dom.closeShortcutsBtn) dom.closeShortcutsBtn.addEventListener("click", () => dom.shortcutsModal && dom.shortcutsModal.classList.add("hidden"));
 
   // Close modals on background click
   window.addEventListener("click", (e) => {
-    if (e.target === dom.certificateModal) dom.certificateModal.classList.add("hidden");
-    if (e.target === dom.leaderboardModal) dom.leaderboardModal.classList.add("hidden");
-    if (e.target === dom.shortcutsModal) dom.shortcutsModal.classList.add("hidden");
+    if (dom.certificateModal && e.target === dom.certificateModal) dom.certificateModal.classList.add("hidden");
+    if (dom.leaderboardModal && e.target === dom.leaderboardModal) dom.leaderboardModal.classList.add("hidden");
+    if (dom.shortcutsModal && e.target === dom.shortcutsModal) dom.shortcutsModal.classList.add("hidden");
   });
 
   // Keyboard Shortcuts
@@ -410,74 +518,86 @@ function setupEventListeners() {
   });
 
   // Dedicated Game Restart
-  dom.restartGameBtn.addEventListener("click", () => {
-    soundEngine.play("btnClick");
-    dom.gameResultsOverlay.classList.add("hidden");
-    typingGames.startGame(typingGames.activeGame);
-  });
+  if (dom.restartGameBtn) {
+    dom.restartGameBtn.addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      if (dom.gameResultsOverlay) dom.gameResultsOverlay.classList.add("hidden");
+      typingGames.startGame(typingGames.activeGame);
+    });
+  }
 
   // Games Exit button
-  dom.exitGameBtn.addEventListener("click", () => {
-    soundEngine.play("btnClick");
-    typingGames.stopGame();
-    dom.gamePlayPanel.classList.add("hidden");
-    dom.gameSelectionPanel.classList.remove("hidden");
-  });
+  if (dom.exitGameBtn) {
+    dom.exitGameBtn.addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      typingGames.stopGame();
+      if (dom.gamePlayPanel) dom.gamePlayPanel.classList.add("hidden");
+      if (dom.gameSelectionPanel) dom.gameSelectionPanel.classList.remove("hidden");
+    });
+  }
 
   // Game Results Overlay Controls (Issue 3)
-  dom.gameResPlayAgainBtn.addEventListener("click", () => {
-    soundEngine.play("btnClick");
-    dom.gameResultsOverlay.classList.add("hidden");
-    typingGames.startGame(typingGames.activeGame);
-  });
+  if (dom.gameResPlayAgainBtn) {
+    dom.gameResPlayAgainBtn.addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      if (dom.gameResultsOverlay) dom.gameResultsOverlay.classList.add("hidden");
+      typingGames.startGame(typingGames.activeGame);
+    });
+  }
 
-  dom.gameResNextGameBtn.addEventListener("click", () => {
-    soundEngine.play("btnClick");
-    dom.gameResultsOverlay.classList.add("hidden");
-    
-    // Cycle to next game
-    const games = ["fruitCatch", "spaceShooter", "rocketRace", "carRacing", "zombieEscape"];
-    let nextIdx = games.indexOf(typingGames.activeGame) + 1;
-    if (nextIdx >= games.length) nextIdx = 0;
-    
-    const nextGame = games[nextIdx];
-    const names = {
-      fruitCatch: "Fruit Catch Mode",
-      spaceShooter: "Space Shooter Mode",
-      rocketRace: "Rocket Race",
-      carRacing: "Car Racing",
-      zombieEscape: "Zombie Escape"
-    };
-    dom.activeGameTitle.textContent = names[nextGame] || "Type Game";
-    typingGames.startGame(nextGame);
-  });
+  if (dom.gameResNextGameBtn) {
+    dom.gameResNextGameBtn.addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      if (dom.gameResultsOverlay) dom.gameResultsOverlay.classList.add("hidden");
+      
+      // Cycle to next game
+      const games = ["fruitCatch", "spaceShooter", "rocketRace", "carRacing", "zombieEscape"];
+      let nextIdx = games.indexOf(typingGames.activeGame) + 1;
+      if (nextIdx >= games.length) nextIdx = 0;
+      
+      const nextGame = games[nextIdx];
+      const names = {
+        fruitCatch: "Fruit Catch Mode",
+        spaceShooter: "Space Shooter Mode",
+        rocketRace: "Rocket Race",
+        carRacing: "Car Racing",
+        zombieEscape: "Zombie Escape"
+      };
+      if (dom.activeGameTitle) dom.activeGameTitle.textContent = names[nextGame] || "Type Game";
+      typingGames.startGame(nextGame);
+    });
+  }
 
-  dom.gameResExitBtn.addEventListener("click", () => {
-    soundEngine.play("btnClick");
-    typingGames.stopGame();
-    dom.gameResultsOverlay.classList.add("hidden");
-    dom.gamePlayPanel.classList.add("hidden");
-    dom.gameSelectionPanel.classList.remove("hidden");
-  });
+  if (dom.gameResExitBtn) {
+    dom.gameResExitBtn.addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      typingGames.stopGame();
+      if (dom.gameResultsOverlay) dom.gameResultsOverlay.classList.add("hidden");
+      if (dom.gamePlayPanel) dom.gamePlayPanel.classList.add("hidden");
+      if (dom.gameSelectionPanel) dom.gameSelectionPanel.classList.remove("hidden");
+    });
+  }
 
-  dom.gameResHomeBtn.addEventListener("click", () => {
-    soundEngine.play("btnClick");
-    typingGames.stopGame();
-    dom.gameResultsOverlay.classList.add("hidden");
-    switchTab("practice");
-  });
+  if (dom.gameResHomeBtn) {
+    dom.gameResHomeBtn.addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      typingGames.stopGame();
+      if (dom.gameResultsOverlay) dom.gameResultsOverlay.classList.add("hidden");
+      switchTab("practice");
+    });
+  }
 
   // Game Over callback (Issue 3 & 8)
   typingGames.onGameOver = (score, coinsEarned, xpEarned, playerWon, accuracy, elapsedSeconds, wpm, cpm, mistakes) => {
-    dom.gameResTitle.textContent = playerWon ? "🎉 Level Complete!" : "💀 Game Over!";
-    dom.gameResScore.textContent = score;
-    dom.gameResAcc.textContent = `${accuracy}%`;
-    dom.gameResTime.textContent = `${elapsedSeconds}s`;
-    dom.gameResXp.textContent = `+${xpEarned} XP`;
-    dom.gameResCoins.textContent = `🪙 +${coinsEarned}`;
+    if (dom.gameResTitle) dom.gameResTitle.textContent = playerWon ? "🎉 Level Complete!" : "💀 Game Over!";
+    if (dom.gameResScore) dom.gameResScore.textContent = score;
+    if (dom.gameResAcc) dom.gameResAcc.textContent = `${accuracy}%`;
+    if (dom.gameResTime) dom.gameResTime.textContent = `${elapsedSeconds}s`;
+    if (dom.gameResXp) dom.gameResXp.textContent = `+${xpEarned} XP`;
+    if (dom.gameResCoins) dom.gameResCoins.textContent = `🪙 +${coinsEarned}`;
     
     updateProfileUI(); // update XP / Coin widgets in header!
-    dom.gameResultsOverlay.classList.remove("hidden");
+    if (dom.gameResultsOverlay) dom.gameResultsOverlay.classList.remove("hidden");
   };
 
   // Games Select play buttons
@@ -526,45 +646,63 @@ function setupEventListeners() {
 }
 
 // Switch navigation tabs
-function switchTab(tabId) {
+function switchTab(tabId, pushToHistory = true) {
   activeTab = tabId;
+
+  // SPA Router History push
+  if (pushToHistory) {
+    history.pushState({ tab: tabId }, "", `#${tabId}`);
+  }
   
   dom.tabs.forEach((tab) => {
-    if (tab.getAttribute("data-tab") === tabId) {
-      tab.classList.add("active");
-    } else {
-      tab.classList.remove("active");
-    }
+    const isCurrent = tab.getAttribute("data-tab") === tabId;
+    tab.classList.toggle("active", isCurrent);
+    tab.setAttribute("aria-selected", isCurrent ? "true" : "false");
+    tab.setAttribute("tabindex", isCurrent ? "0" : "-1");
   });
 
   dom.tabContents.forEach((content) => {
     if (content.id === `tab-${tabId}`) {
       content.classList.remove("hidden");
-      content.classList.add("active");
     } else {
       content.classList.add("hidden");
-      content.classList.remove("active");
     }
   });
 
+  // State Preservation: Pause rather than stop/reset when leaving Practice Tab
   if (tabId !== "practice") {
-    timer.stop();
-    typingEngine.reset();
-    isTestActive = false;
-    dom.resultsOverlay.classList.add("hidden");
-    resetTimerUI();
-    dom.startBtn.classList.remove("hidden");
-    dom.startBtn.disabled = false;
-    dom.pauseBtn.classList.add("hidden");
-    dom.resumeBtn.classList.add("hidden");
-    dom.pausedOverlay.classList.add("hidden");
+    if (isTestActive && !timer.isPaused()) {
+      pauseTest();
+    }
+  } else {
+    // Returning to Practice tab
+    if (isTestActive) {
+      // Keep paused overlay visible if we had paused it
+      dom.pausedOverlay.classList.remove("hidden");
+      dom.pauseBtn.classList.add("hidden");
+      dom.resumeBtn.classList.remove("hidden");
+      dom.startBtn.classList.add("hidden");
+    } else {
+      dom.startBtn.classList.remove("hidden");
+      dom.startBtn.disabled = false;
+      dom.pauseBtn.classList.add("hidden");
+      dom.resumeBtn.classList.add("hidden");
+      dom.pausedOverlay.classList.add("hidden");
+    }
   }
 
+  // State Preservation: Pause rather than stop when leaving Games Tab
   if (tabId !== "games") {
-    typingGames.stopGame();
-    dom.gameResultsOverlay.classList.add("hidden");
-    dom.gamePlayPanel.classList.add("hidden");
-    dom.gameSelectionPanel.classList.remove("hidden");
+    if (typingGames.isRunning && !typingGames.isPaused) {
+      typingGames.pauseGame();
+    }
+  } else {
+    // Returning to Games tab
+    if (typingGames.isRunning && typingGames.isPaused) {
+      typingGames.resumeGame();
+      dom.gameSelectionPanel.classList.add("hidden");
+      dom.gamePlayPanel.classList.remove("hidden");
+    }
   }
 
   if (tabId === "stats") {
@@ -572,6 +710,20 @@ function switchTab(tabId) {
     chartManager.updateChart(historyManager.getRecords());
     renderHistory();
     renderAchievements();
+  }
+
+  if (tabId === "challenges") {
+    // Refresh countdown time and daily rendering
+    renderChallenges();
+  }
+
+  if (tabId === "shop") {
+    // Render current coin balance
+    if (dom.shopCoinsText) {
+      dom.shopCoinsText.textContent = profileManager.coins;
+    }
+    // Render active shop category
+    renderShop("themes");
   }
 }
 
@@ -1130,7 +1282,7 @@ function renderAchievements() {
   const streak = calculateStreak(records);
   const bestWpm = records.length > 0 ? Math.max(...records.map((r) => r.wpm)) : 0;
   const bestAcc = records.length > 0 ? Math.max(...records.map((r) => r.accuracy)) : 0;
-  const totalChars = records.reduce((sum, r) => sum + r.paragraph.length, 0);
+  const totalChars = records.reduce((sum, r) => sum + (r.paragraph ? r.paragraph.length : 0), 0);
 
   const achievementsList = [
     { id: "first_test", title: "First Flight", desc: "Complete 1 speed test", icon: "🚀", met: records.length >= 1 },
@@ -1218,6 +1370,7 @@ function getLocalDateStr(d) {
 function updateDashboard() {
   const records = historyManager.getRecords();
   const totalTests = records.length;
+  const totalBadges = storage.get("typePlayBadges", []).length;
   
   if (totalTests === 0) {
     dom.highestWpmDisplay.textContent = "0";
@@ -1227,6 +1380,9 @@ function updateDashboard() {
     dom.totalTestsDisplay.textContent = "0";
     dom.totalTimeDisplay.textContent = "0s";
     dom.currentStreakDisplay.textContent = "0 days";
+    if (dom.totalCharsTyped) dom.totalCharsTyped.textContent = "0";
+    if (dom.totalWordsTyped) dom.totalWordsTyped.textContent = "0";
+    if (dom.totalBadgesEarned) dom.totalBadgesEarned.textContent = totalBadges;
     return;
   }
 
@@ -1236,6 +1392,9 @@ function updateDashboard() {
   const avgAcc = Math.round(records.reduce((sum, r) => sum + r.accuracy, 0) / totalTests);
   const totalDuration = records.reduce((sum, r) => sum + r.duration, 0);
   const streak = calculateStreak(records);
+  
+  const totalChars = records.reduce((sum, r) => sum + (r.paragraph ? r.paragraph.length : 0), 0);
+  const totalWords = records.reduce((sum, r) => sum + (r.paragraph ? r.paragraph.split(/\s+/).length : 0), 0);
 
   animateNumber(dom.highestWpmDisplay, 0, highestWpm, 1000);
   animateNumber(dom.avgWpmDisplay, 0, avgWpm, 1000);
@@ -1244,6 +1403,10 @@ function updateDashboard() {
   dom.totalTestsDisplay.textContent = totalTests;
   dom.totalTimeDisplay.textContent = `${totalDuration}s`;
   dom.currentStreakDisplay.textContent = `${streak} ${streak === 1 ? "day" : "days"}`;
+  
+  if (dom.totalCharsTyped) dom.totalCharsTyped.textContent = totalChars;
+  if (dom.totalWordsTyped) dom.totalWordsTyped.textContent = totalWords;
+  if (dom.totalBadgesEarned) dom.totalBadgesEarned.textContent = totalBadges;
 }
 
 function animateNumber(element, start, end, duration) {
@@ -1305,11 +1468,11 @@ function renderHistory() {
         <div class="hist-badge-row">
           <span class="hist-badge wpm-badge">${record.wpm} WPM</span>
           <span class="hist-badge acc-badge">${record.accuracy}% Acc</span>
-          <span class="hist-badge diff-badge ${record.difficulty}">${record.difficulty.toUpperCase()}</span>
+          <span class="hist-badge diff-badge ${record.difficulty || 'medium'}">${(record.difficulty || 'medium').toUpperCase()}</span>
         </div>
       </div>
       <div class="hist-details">
-        <p class="hist-paragraph">"${record.paragraph.substring(0, 75)}..."</p>
+        <p class="hist-paragraph">"${(record.paragraph || '').substring(0, 75)}..."</p>
         <div class="hist-actions">
           <button class="btn btn-sm btn-outline btn-cert" data-id="${record.id}">📜 Cert</button>
           <button class="btn btn-sm btn-danger btn-del" data-id="${record.id}">✕</button>
@@ -1530,6 +1693,17 @@ function renderChallenges() {
       }
     }
   });
+
+  // Calculate remaining time until midnight
+  const now = new Date();
+  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+  const diffMs = midnight - now;
+  const diffHrs = Math.max(0, Math.floor(diffMs / 3600000));
+  const diffMins = Math.max(0, Math.floor((diffMs % 3600000) / 60000));
+  
+  if (dom.challengeCountdown) {
+    dom.challengeCountdown.textContent = `${String(diffHrs).padStart(2, "0")}h ${String(diffMins).padStart(2, "0")}m`;
+  }
 }
 
 function startDailyChallenge(chalType) {
@@ -1555,8 +1729,49 @@ function startDailyChallenge(chalType) {
   alert(`📅 Loaded Daily ${chalType.toUpperCase()} Challenge! Complete the run to unlock rewards.`);
 }
 
+// Shop items catalog definition
+const SHOP_ITEMS = {
+  themes: [
+    { id: "light", name: "Light Mode", price: 0, preview: "☀️" },
+    { id: "dark", name: "Dark Slate", price: 0, preview: "🌙" },
+    { id: "blue", name: "Deep Ocean", price: 100, preview: "🌊" },
+    { id: "purple", name: "Cyber Purple", price: 150, preview: "🔮" },
+    { id: "green", name: "Forest Mint", price: 200, preview: "🌿" },
+    { id: "amoled", name: "AMOLED Black", price: 250, preview: "🕶️" },
+    { id: "neon", name: "Neon Glow", price: 300, preview: "🚨" },
+    { id: "sunset", name: "Sunset Gold", price: 350, preview: "🌇" },
+    { id: "matrix", name: "Matrix Green", price: 500, preview: "📟" }
+  ],
+  cursors: [
+    { id: "line", name: "Classic Line", price: 0, preview: "❘" },
+    { id: "block", name: "Retro Block", price: 150, preview: "█" },
+    { id: "underline", name: "Underline", price: 150, preview: "＿" },
+    { id: "glowdot", name: "Glow Dot", price: 300, preview: "🔴" },
+    { id: "laser", name: "Neon Laser", price: 450, preview: "⚡" }
+  ],
+  avatars: [
+    { id: "alien", name: "Alien Cadet", price: 0, preview: "👽" },
+    { id: "fox", name: "Cyber Fox", price: 0, preview: "🦊" },
+    { id: "cat", name: "Ninja Cat", price: 200, preview: "🐱" },
+    { id: "ghost", name: "Retro Ghost", price: 350, preview: "👻" },
+    { id: "robot", name: "AI Automaton", price: 500, preview: "🤖" },
+    { id: "unicorn", name: "Typing Unicorn", price: 750, preview: "🦄" }
+  ],
+  badges: [
+    { id: "badge_cadet", name: "Speedy Cadet Title", price: 100, preview: "⚡" },
+    { id: "badge_ninja", name: "Keyboard Ninja Title", price: 300, preview: "🥷" },
+    { id: "badge_lord", name: "Typing Overlord Title", price: 600, preview: "👑" },
+    { id: "badge_god", name: "Keyboard Deity Title", price: 1000, preview: "🌌" }
+  ]
+};
+
 // Reward & Shop Renderer
 function renderShop(category) {
+  // Update shop coins balance text display
+  if (dom.shopCoinsText) {
+    dom.shopCoinsText.textContent = profileManager.coins;
+  }
+
   dom.shopItemsGrid.innerHTML = "";
   const items = SHOP_ITEMS[category] || [];
   
@@ -1576,6 +1791,9 @@ function renderShop(category) {
     } else if (category === "avatars") {
       isUnlocked = profileManager.unlockedAvatars.includes(item.id);
       isEquipped = profileManager.selectedAvatar === item.id;
+    } else if (category === "badges") {
+      isUnlocked = profileManager.unlockedBadges.includes(item.id);
+      isEquipped = profileManager.selectedBadge === item.id;
     }
     
     if (isEquipped) {

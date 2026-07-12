@@ -12,6 +12,7 @@ export const themeManager = {
 
   applyTheme(theme) {
     if (!THEMES.includes(theme)) theme = "dark";
+    if (!document.body) return;
     
     // Remove all theme classes from document body
     THEMES.forEach((t) => {
