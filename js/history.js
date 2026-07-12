@@ -131,7 +131,7 @@ export const historyManager = {
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(22);
-    doc.text("Antigravity Speed Typer", 14, 18);
+    doc.text("Typing Learning & Gaming", 14, 18);
     
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);

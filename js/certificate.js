@@ -153,7 +153,7 @@ export const certificateGenerator = {
     // Draw Cursive mock signature
     ctx.font = "italic 32px 'Georgia', 'Brush Script MT', cursive";
     ctx.fillStyle = "#1e40af"; // Blue ink
-    ctx.fillText("Antigravity Typer", 820 + sigLineW / 2, sigY - 15);
+    ctx.fillText("TypePlay Platform", 820 + sigLineW / 2, sigY - 15);
 
     // 6. Draw Circular Seal (Middle)
     const sealX = w / 2;

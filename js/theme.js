@@ -1,6 +1,6 @@
 import { storage } from "./utils.js";
 
-const THEMES = ["light", "dark", "blue", "purple", "green", "amoled"];
+const THEMES = ["light", "dark", "blue", "purple", "green", "amoled", "neon", "sunset", "matrix"];
 
 export const themeManager = {
   currentTheme: "dark",

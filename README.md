@@ -1,6 +1,6 @@
-# Antigravity Speed Typer 🚀
+# Typing Learning & Gaming Platform 🚀
 
-Antigravity Speed Typer is a feature-rich, high-performance, glassmorphic typing speed assessment application. It is designed to evaluate, analyze, and train keyboarding skills using modern web standards. By utilizing modular Vanilla JavaScript, CSS Custom Properties, and responsive layout structures, this tool provides a visual and auditory environment that mimics top-tier competitive typing sites (like Monkeytype or Keybr).
+Typing Learning & Gaming Platform is a feature-rich, high-performance, glassmorphic typing speed assessment application. It is designed to evaluate, analyze, and train keyboarding skills using modern web standards. By utilizing modular Vanilla JavaScript, CSS Custom Properties, and responsive layout structures, this tool provides a visual and auditory environment that mimics top-tier competitive typing sites (like Monkeytype or Keybr).
 
 ![Logo](assets/logo.svg)
 
@@ -114,4 +114,4 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 ## 👤 Author
 
-Developed by **Antigravity AI**. Assisted by Google DeepMind team.
+Developed by **TypePlay Team**. Assisted by Google DeepMind team.

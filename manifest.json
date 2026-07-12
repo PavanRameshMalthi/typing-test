@@ -1,6 +1,6 @@
 {
-  "name": "Antigravity Speed Typer",
-  "short_name": "AgTyper",
+  "name": "Typing Learning & Gaming Platform",
+  "short_name": "TypePlay",
   "description": "A feature-rich, high-performance, glassmorphic typing speed tester built with vanilla web technologies.",
   "start_url": "./index.html",
   "display": "standalone",

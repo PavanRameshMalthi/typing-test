@@ -11,6 +11,9 @@ const ASSETS = [
   "./js/history.js",
   "./js/chart.js",
   "./js/certificate.js",
+  "./js/profile.js",
+  "./js/lessons.js",
+  "./js/games.js",
   "./manifest.json",
   "./assets/logo.svg"
 ];
