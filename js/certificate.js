@@ -1,3 +1,5 @@
+import { toast } from "./toast.js";
+
 export const certificateGenerator = {
   drawCertificate(canvas, name, wpm, accuracy, difficulty, dateStr) {
     const ctx = canvas.getContext("2d");
@@ -281,7 +283,7 @@ export const certificateGenerator = {
   downloadPDF(canvas, name) {
     const jsPDF = window.jspdf ? window.jspdf.jsPDF : null;
     if (!jsPDF) {
-      alert("PDF library is not loaded. Check internet connection.");
+      toast.error("PDF library is not loaded. Check internet connection.");
       return;
     }
 

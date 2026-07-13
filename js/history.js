@@ -1,4 +1,6 @@
 import { storage } from "./utils.js";
+import { toast } from "./toast.js";
+
 
 export const historyManager = {
   records: [],
@@ -91,7 +93,7 @@ export const historyManager = {
 
   // EXPORTERS
   exportCSV() {
-    if (this.records.length === 0) return alert("No history records to export!");
+    if (this.records.length === 0) return toast.warning("No history records to export!");
     
     let csv = "Date,WPM,Accuracy (%),Mistakes,Duration (s),Difficulty,Paragraph\n";
     this.records.forEach((r) => {
@@ -104,17 +106,17 @@ export const historyManager = {
   },
 
   exportJSON() {
-    if (this.records.length === 0) return alert("No history records to export!");
+    if (this.records.length === 0) return toast.warning("No history records to export!");
     const json = JSON.stringify(this.records, null, 2);
     this.downloadFile(json, "typing_history.json", "application/json;charset=utf-8;");
   },
 
   exportPDF() {
-    if (this.records.length === 0) return alert("No history records to export!");
+    if (this.records.length === 0) return toast.warning("No history records to export!");
     
     const jsPDF = window.jspdf ? window.jspdf.jsPDF : null;
     if (!jsPDF) {
-      alert("PDF library is not loaded. Check internet connection.");
+      toast.error("PDF library is not loaded. Check internet connection.");
       return;
     }
 

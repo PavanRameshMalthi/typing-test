@@ -1,4 +1,6 @@
 import { storage, soundEngine } from "./utils.js";
+import { toast } from "./toast.js";
+
 
 const DEFAULT_PROFILE = {
   xp: 0,
@@ -104,7 +106,7 @@ export const profileManager = {
 
   purchaseItem(type, itemId, price) {
     if (this.coins < price) {
-      alert("Not enough coins!");
+      toast.warning("Not enough coins!");
       return false;
     }
 

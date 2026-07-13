@@ -8,6 +8,11 @@ import { certificateGenerator } from "./certificate.js";
 import { profileManager } from "./profile.js";
 import { lessonsManager } from "./lessons.js";
 import { typingGames } from "./games.js";
+import { toast } from "./toast.js";
+import { onboardingManager } from "./onboarding.js";
+import { goalsManager } from "./goals.js";
+import { achievementsManager } from "./achievements.js";
+import { profilePageManager } from "./profile-page.js";
 
 // Global DOM Cache
 const dom = {
@@ -198,6 +203,11 @@ document.addEventListener("DOMContentLoaded", () => {
   try { lessonsManager.init(); } catch(e) { console.error("lessonsManager.init failed:", e); }
   try { typingGames.init(dom.gameCanvas); } catch(e) { console.error("typingGames.init failed:", e); }
   
+  // Custom Modules
+  try { onboardingManager.init(); } catch(e) { console.error("onboardingManager.init failed:", e); }
+  try { goalsManager.init(); } catch(e) { console.error("goalsManager.init failed:", e); }
+  try { achievementsManager.init(); } catch(e) { console.error("achievementsManager.init failed:", e); }
+
   // Render initial profile state
   try { updateProfileUI(); } catch(e) { console.error("updateProfileUI failed:", e); }
   try { themeManager.setTheme(profileManager.selectedTheme); } catch(e) { console.error("themeManager.setTheme failed:", e); }
@@ -239,13 +249,14 @@ document.addEventListener("DOMContentLoaded", () => {
   try { renderLessons(); } catch(e) { console.error("renderLessons failed:", e); }
   try { renderChallenges(); } catch(e) { console.error("renderChallenges failed:", e); }
   try { renderShop("themes"); } catch(e) { console.error("renderShop failed:", e); }
+  try { renderDailyGoalsUI(); } catch(e) { console.error("renderDailyGoalsUI failed:", e); }
 
   // Event Binding — MUST always execute
   setupEventListeners();
 
   // Handle initial page load hash routing
   const initialHash = window.location.hash.substring(1);
-  const validTabs = ["practice", "lessons", "games", "challenges", "shop", "stats"];
+  const validTabs = ["practice", "lessons", "games", "challenges", "shop", "stats", "achievements", "multiplayer", "profile", "settings"];
   if (initialHash && validTabs.includes(initialHash)) {
     switchTab(initialHash, false);
   } else {
@@ -359,10 +370,37 @@ function setupEventListeners() {
       if (lastTestStats) {
         openCertificateModal(lastTestStats);
       } else {
-        alert("No completed test record found for this session.");
+        toast.warning("No completed test record found for this session.");
       }
     });
   }
+
+  // Difficulty Cards Click handlers
+  document.querySelectorAll(".difficulty-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      document.querySelectorAll(".difficulty-card").forEach((c) => {
+        c.classList.remove("selected");
+        c.setAttribute("aria-checked", "false");
+      });
+      card.classList.add("selected");
+      card.setAttribute("aria-checked", "true");
+      
+      const diffVal = card.getAttribute("data-diff");
+      difficulty = diffVal;
+      if (dom.difficultySelect) {
+        dom.difficultySelect.value = diffVal;
+      }
+      if (!isTestActive) loadNextParagraph();
+    });
+    
+    card.addEventListener("keydown", (e) => {
+      if (e.key === " " || e.key === "Enter") {
+        e.preventDefault();
+        card.click();
+      }
+    });
+  });
 
   // Options (Practice Settings)
   if (dom.difficultySelect) {
@@ -406,6 +444,191 @@ function setupEventListeners() {
       const enabled = soundEngine.toggle();
       updateSoundButtonUI();
       soundEngine.play("btnClick");
+      
+      // Sync setting toggle
+      const soundCheck = document.getElementById("settingsSoundToggle");
+      if (soundCheck) soundCheck.checked = enabled;
+    });
+  }
+
+  // Settings Panel specific bindings
+  const soundCheck = document.getElementById("settingsSoundToggle");
+  if (soundCheck) {
+    soundCheck.addEventListener("change", () => {
+      soundEngine.enabled = soundCheck.checked;
+      updateSoundButtonUI();
+      soundEngine.play("btnClick");
+    });
+  }
+
+  const kbCheck = document.getElementById("settingsKeyboardToggle");
+  if (kbCheck) {
+    kbCheck.addEventListener("change", () => {
+      soundEngine.play("btnClick");
+      const kbPanel = document.querySelector(".heatmap-panel");
+      if (kbPanel) {
+        if (kbCheck.checked) kbPanel.classList.remove("hidden");
+        else kbPanel.classList.add("hidden");
+      }
+    });
+  }
+
+  const guideCheck = document.getElementById("settingsFingerGuideToggle");
+  if (guideCheck) {
+    guideCheck.addEventListener("change", () => {
+      soundEngine.play("btnClick");
+      const fgPanel = document.querySelector(".finger-guide-panel");
+      if (fgPanel) {
+        if (guideCheck.checked) fgPanel.classList.remove("hidden");
+        else fgPanel.classList.add("hidden");
+      }
+    });
+  }
+
+  // Collapsible Settings sections
+  document.querySelectorAll(".settings-section-header").forEach((header) => {
+    header.addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      const body = header.nextElementSibling;
+      const isOpen = header.classList.toggle("open");
+      header.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      if (body) {
+        body.classList.toggle("hidden", !isOpen);
+      }
+    });
+    header.addEventListener("keydown", (e) => {
+      if (e.key === " " || e.key === "Enter") {
+        e.preventDefault();
+        header.click();
+      }
+    });
+  });
+
+  // Font size settings
+  document.querySelectorAll(".font-size-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      document.querySelectorAll(".font-size-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      
+      const size = btn.getAttribute("data-size");
+      document.body.classList.remove("font-size-sm", "font-size-md", "font-size-lg", "font-size-xl");
+      document.body.classList.add(`font-size-${size}`);
+    });
+  });
+
+  // Dyslexia & High Contrast toggles
+  const dyslexiaToggle = document.getElementById("dyslexiaFontToggle");
+  if (dyslexiaToggle) {
+    dyslexiaToggle.addEventListener("change", () => {
+      soundEngine.play("btnClick");
+      document.body.classList.toggle("font-dyslexia", dyslexiaToggle.checked);
+    });
+  }
+
+  const contrastToggle = document.getElementById("highContrastToggle");
+  if (contrastToggle) {
+    contrastToggle.addEventListener("change", () => {
+      soundEngine.play("btnClick");
+      document.body.classList.toggle("high-contrast", contrastToggle.checked);
+    });
+  }
+
+  // Dev actions reset
+  const resetObBtn = document.getElementById("resetOnboardingBtn");
+  if (resetObBtn) {
+    resetObBtn.addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      onboardingManager.reset();
+      toast.success("Onboarding tutorial has been reset! Reloading...");
+      setTimeout(() => window.location.reload(), 1500);
+    });
+  }
+
+  const exportAllBtn = document.getElementById("exportAllDataBtn");
+  if (exportAllBtn) {
+    exportAllBtn.addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      const allData = {
+        profile: storage.get("typePlayUserProfile", {}),
+        history: storage.get("typingHistory", []),
+        badges: storage.get("typePlayBadges", []),
+        goals: storage.get("typePlayDailyGoals", {}),
+        heatmap: storage.get("typePlayHeatmap", {})
+      };
+      const json = JSON.stringify(allData, null, 2);
+      historyManager.downloadFile(json, "typeplay_all_data.json", "application/json;charset=utf-8;");
+      toast.success("Profile data package exported successfully!");
+    });
+  }
+
+  const resetAllBtn = document.getElementById("resetAllProgressBtn");
+  if (resetAllBtn) {
+    resetAllBtn.addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      if (confirm("⚠️ CRITICAL: Are you absolutely sure you want to delete all local progress, stats, history, and inventory? This is permanent!")) {
+        storage.clear();
+        toast.error("All local progress wiped completely. Refreshing page...");
+        setTimeout(() => window.location.reload(), 1500);
+      }
+    });
+  }
+
+  // Custom tabs switching
+  document.querySelectorAll(".custom-tab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      document.querySelectorAll(".custom-tab-btn").forEach((b) => {
+        b.classList.remove("active");
+        b.setAttribute("aria-selected", "false");
+      });
+      btn.classList.add("active");
+      btn.setAttribute("aria-selected", "true");
+      
+      const tabVal = btn.getAttribute("data-custom-tab");
+      document.querySelectorAll(".custom-tab-panel").forEach((p) => p.classList.add("hidden"));
+      
+      const targetPanel = document.getElementById(`customTab${tabVal.charAt(0).toUpperCase() + tabVal.slice(1)}`);
+      if (targetPanel) targetPanel.classList.remove("hidden");
+
+      if (tabVal === "recent") {
+        renderRecentCustomTexts();
+      }
+    });
+  });
+
+  // File Upload listener
+  const fileInput = document.getElementById("customFileInput");
+  const fileStatus = document.getElementById("fileUploadStatus");
+  if (fileInput) {
+    fileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const text = evt.target.result;
+        if (text.trim().length === 0) {
+          toast.error("Uploaded file is empty!");
+          if (fileStatus) fileStatus.textContent = "Error: File is empty";
+          return;
+        }
+
+        const trimmed = text.trim().substring(0, 10000);
+        if (dom.customInput) {
+          dom.customInput.value = trimmed;
+          updateCustomTextCounters();
+        }
+        
+        saveCustomTextToRecent(trimmed);
+        
+        toast.success(`Loaded file: ${file.name}`);
+        if (fileStatus) fileStatus.textContent = `Successfully loaded: ${file.name}`;
+        
+        // Load next paragraph
+        if (!isTestActive) loadNextParagraph();
+      };
+      reader.readAsText(file);
     });
   }
 
@@ -418,7 +641,9 @@ function setupEventListeners() {
       soundEngine.play("btnClick");
       if (dom.customInputCard) {
         dom.customInputCard.classList.toggle("hidden");
-        if (!dom.customInputCard.classList.contains("hidden") && dom.customInput) {
+        const isOpen = !dom.customInputCard.classList.contains("hidden");
+        dom.customInputToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        if (isOpen && dom.customInput) {
           dom.customInput.focus();
         }
       }
@@ -427,6 +652,7 @@ function setupEventListeners() {
 
   if (dom.customInput) {
     dom.customInput.addEventListener("input", () => {
+      updateCustomTextCounters();
       if (!isTestActive && dom.customInput.value.trim().length > 0) {
         loadNextParagraph();
       }
@@ -596,6 +822,31 @@ function setupEventListeners() {
     if (dom.gameResXp) dom.gameResXp.textContent = `+${xpEarned} XP`;
     if (dom.gameResCoins) dom.gameResCoins.textContent = `🪙 +${coinsEarned}`;
     
+    // Save game stats
+    const gPlay = storage.get("typePlayGamesPlayed", 0) + 1;
+    storage.set("typePlayGamesPlayed", gPlay);
+
+    // Reward player profile
+    profileManager.addXP(xpEarned);
+    profileManager.addCoins(coinsEarned);
+
+    // Log Daily Goals progress
+    try {
+      goalsManager.updateProgress("play_game", 1);
+      goalsManager.updateProgress("earn_xp", xpEarned);
+      renderDailyGoalsUI();
+    } catch(e) {
+      console.error("Failed to update daily goals:", e);
+    }
+
+    // Check achievements
+    try {
+      const statsForCheck = getAchievementsStatsForCheck();
+      achievementsManager.check(statsForCheck);
+    } catch(e) {
+      console.error("Failed to check achievements:", e);
+    }
+
     updateProfileUI(); // update XP / Coin widgets in header!
     if (dom.gameResultsOverlay) dom.gameResultsOverlay.classList.remove("hidden");
   };
@@ -710,6 +961,14 @@ function switchTab(tabId, pushToHistory = true) {
     chartManager.updateChart(historyManager.getRecords());
     renderHistory();
     renderAchievements();
+  }
+
+  if (tabId === "achievements") {
+    renderAchievements();
+  }
+
+  if (tabId === "profile") {
+    profilePageManager.render();
   }
 
   if (tabId === "challenges") {
@@ -872,7 +1131,7 @@ function startTest() {
   if (isTestActive || timer.isRunning()) return;
 
   if (!currentParagraph || currentParagraph.length < 3) {
-    alert("Paragraph content is empty! Select a valid set.");
+    toast.warning("Paragraph content is empty! Select a valid set.");
     return;
   }
 
@@ -975,7 +1234,7 @@ function resetTest() {
 function replayMistakes() {
   const replayText = typingEngine.getReplayParagraph();
   if (!replayText) {
-    alert("Amazing! You made 0 mistakes in the last test to replay.");
+    toast.success("Amazing! You made 0 mistakes in the last test to replay.");
     return;
   }
   
@@ -994,7 +1253,7 @@ function toggleFullscreen() {
   soundEngine.play("btnClick");
   if (!document.fullscreenElement) {
     document.documentElement.requestFullscreen().catch((err) => {
-      alert(`Error attempting to enable fullscreen mode: ${err.message}`);
+      toast.error(`Error attempting to enable fullscreen mode: ${err.message}`);
     });
     dom.fullscreenBtn.innerHTML = "🗖 Windowed";
   } else {
@@ -1109,17 +1368,21 @@ function handleTestFinished() {
     coinsGained += 10;
   }
 
+  let isCampaignLevelCompleted = false;
+
   // Check Level Campaign completion (Issue 5 & 6)
   if (activeLessonId !== null) {
     const activeId = activeLessonId;
+    const currentLesson = lessonsManager.getLevels().find(l => l.id === activeId);
     const completedNow = lessonsManager.completeLevel(activeId, finalWpm, finalAcc);
     if (completedNow) {
       xpGained += 150;
       coinsGained += 50;
+      isCampaignLevelCompleted = true;
       triggerConfettiRain();
-      setTimeout(() => {
-        alert(`🎉 New Level Unlocked! Level ${activeId + 1}`);
-      }, 500);
+      toast.success(`🎉 Campaign Level ${activeId} Completed! Level ${activeId + 1} is now unlocked.`);
+    } else if (finalWpm >= (currentLesson ? currentLesson.requiredWpm : 0) && finalAcc >= (currentLesson ? currentLesson.requiredAcc : 0)) {
+      isCampaignLevelCompleted = true;
     }
     activeLessonId = null;
     renderLessons();
@@ -1135,6 +1398,7 @@ function handleTestFinished() {
       storage.set(challengeKey, true);
       xpGained += 100;
       coinsGained += 50;
+      toast.success(`📅 Daily Challenge completed! Earned bonus rewards!`);
     }
     activeChallengeType = null;
     renderChallenges();
@@ -1193,6 +1457,30 @@ function handleTestFinished() {
   dom.resXp.textContent = `+${xpGained} XP`;
   dom.resCoins.textContent = `🪙 +${coinsGained}`;
 
+  // Log Daily Goals progress
+  try {
+    goalsManager.updateProgress("complete_tests", 1);
+    goalsManager.updateProgress("practice_time", actualElapsed);
+    if (finalAcc >= 95) {
+      goalsManager.updateProgress("reach_accuracy", 1, true);
+    }
+    goalsManager.updateProgress("earn_xp", xpGained);
+    if (isCampaignLevelCompleted) {
+      goalsManager.updateProgress("finish_lesson", 1, true);
+    }
+    renderDailyGoalsUI();
+  } catch(e) {
+    console.error("Failed to update daily goals:", e);
+  }
+
+  // Check achievements
+  try {
+    const statsForCheck = getAchievementsStatsForCheck();
+    achievementsManager.check(statsForCheck);
+  } catch(e) {
+    console.error("Failed to check achievements:", e);
+  }
+
   // Highlight completed paragraph
   const chars = dom.paragraphDisplay.querySelectorAll(".char");
   chars.forEach((c) => {
@@ -1246,7 +1534,7 @@ function updateProfileUI() {
 function showLevelUpEffect(level) {
   triggerConfettiRain();
   setTimeout(() => {
-    alert(`🎉 LEVEL UP! You reached Level ${level}! Keep typing to unlock more custom designs.`);
+    toast.levelUp(level);
   }, 300);
 }
 
@@ -1276,55 +1564,86 @@ function mergeToCumulativeHeatmap(currentRunMap) {
 
 // Achievements Renderer
 function renderAchievements() {
-  const records = historyManager.getRecords();
-  const unlocked = storage.get("typePlayBadges", []);
+  const achGrid = document.getElementById("achievementsGrid");
+  const achCompletionText = document.getElementById("achCompletionText");
+  const achRingText = document.getElementById("achRingText");
+  const achRingFill = document.getElementById("achRingFill");
+
+  if (!achGrid) return;
+
+  const stats = getAchievementsStatsForCheck();
+
+  const filterBtnActive = document.querySelector(".ach-filter-btn.active");
+  const currentFilter = filterBtnActive ? filterBtnActive.getAttribute("data-ach-filter") : "all";
+
+  const allAchs = achievementsManager.getAll();
   
+  // Update Header UI
+  const total = achievementsManager.getTotalCount();
+  const unlocked = achievementsManager.getUnlockedCount();
+  const percent = achievementsManager.getCompletionPercent();
+
+  if (achCompletionText) achCompletionText.textContent = `${unlocked} / ${total} Unlocked`;
+  if (achRingText) achRingText.textContent = `${percent}%`;
+  if (achRingFill) {
+    const offset = 100 - percent;
+    achRingFill.style.strokeDashoffset = offset;
+  }
+
+  achGrid.innerHTML = "";
+
+  const filtered = allAchs.filter(ach => {
+    if (currentFilter === "all") return true;
+    if (currentFilter === "unlocked") return ach.unlocked;
+    if (currentFilter === "locked") return !ach.unlocked;
+    return ach.rarity === currentFilter;
+  });
+
+  if (filtered.length === 0) {
+    achGrid.innerHTML = `<div class="empty-placeholder" style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-muted);">No achievements found in this category.</div>`;
+    return;
+  }
+
+  filtered.forEach(ach => {
+    const card = document.createElement("div");
+    card.className = `achievement-card ${ach.unlocked ? "unlocked" : "locked"}`;
+    card.setAttribute("role", "listitem");
+    card.innerHTML = `
+      <div class="ach-badge-icon">${ach.unlocked ? ach.icon : "🔒"}</div>
+      <div class="ach-info">
+        <h3 class="ach-title">${ach.title}</h3>
+        <p class="ach-desc">${ach.desc}</p>
+        <span class="ach-rarity rarity-${ach.rarity}">${ach.rarity}</span>
+      </div>
+      <span class="ach-lock-icon">${ach.unlocked ? "✅" : "🔒"}</span>
+    `;
+    achGrid.appendChild(card);
+  });
+}
+
+function getAchievementsStatsForCheck() {
+  const records = historyManager.getRecords();
   const streak = calculateStreak(records);
   const bestWpm = records.length > 0 ? Math.max(...records.map((r) => r.wpm)) : 0;
   const bestAcc = records.length > 0 ? Math.max(...records.map((r) => r.accuracy)) : 0;
+  
   const totalChars = records.reduce((sum, r) => sum + (r.paragraph ? r.paragraph.length : 0), 0);
+  const totalWords = records.reduce((sum, r) => sum + (r.paragraph ? r.paragraph.split(/\s+/).length : 0), 0);
+  
+  const gamesPlayed = storage.get("typePlayGamesPlayed", 0);
+  const lessonsCompleted = lessonsManager.completedLevels.length;
 
-  const achievementsList = [
-    { id: "first_test", title: "First Flight", desc: "Complete 1 speed test", icon: "🚀", met: records.length >= 1 },
-    { id: "wpm_50", title: "Speedy Cadet", desc: "Reach 50 WPM", icon: "⚡", met: bestWpm >= 50 },
-    { id: "wpm_100", title: "Key Legend", desc: "Reach 100 WPM", icon: "🌌", met: bestWpm >= 100 },
-    { id: "perfect_acc", title: "Perfectionist", desc: "Achieve 100% accuracy", icon: "🎯", met: bestAcc === 100 },
-    { id: "tests_10", title: "Daily Typist", desc: "Complete 10 total tests", icon: "📚", met: records.length >= 10 },
-    { id: "tests_100", title: "Keyboard Warrior", desc: "Complete 100 total tests", icon: "⚔️", met: records.length >= 100 },
-    { id: "streak_3", title: "Unstoppable", desc: "Maintain a 3-day typing streak", icon: "🔥", met: streak >= 3 },
-    { id: "chars_10k", title: "Word Giant", desc: "Type 10,000 characters", icon: "🐉", met: totalChars >= 10000 }
-  ];
-
-  let newlyUnlocked = false;
-  const nextUnlockedList = [...unlocked];
-
-  dom.badgesGrid.innerHTML = "";
-  achievementsList.forEach((ach) => {
-    const isAlreadyUnlocked = unlocked.includes(ach.id);
-    const isUnlockedNow = ach.met;
-    
-    if (isUnlockedNow && !isAlreadyUnlocked) {
-      nextUnlockedList.push(ach.id);
-      newlyUnlocked = true;
-      soundEngine.play("achievement");
-    }
-
-    const badge = document.createElement("div");
-    badge.className = `badge-card glass-card ${isUnlockedNow ? "unlocked" : "locked"}`;
-    badge.innerHTML = `
-      <div class="badge-icon">${ach.icon}</div>
-      <div class="badge-info">
-        <h3>${ach.title}</h3>
-        <p>${ach.desc}</p>
-      </div>
-      <span class="badge-status">${isUnlockedNow ? "✓" : "🔒"}</span>
-    `;
-    dom.badgesGrid.appendChild(badge);
-  });
-
-  if (newlyUnlocked) {
-    storage.set("typePlayBadges", nextUnlockedList);
-  }
+  return {
+    totalTests: records.length,
+    bestWpm,
+    bestAcc,
+    totalWords,
+    totalChars,
+    streak,
+    gamesPlayed,
+    lessonsCompleted,
+    userLevel: profileManager.level
+  };
 }
 
 // Daily Streak Calculator
@@ -1370,19 +1689,55 @@ function getLocalDateStr(d) {
 function updateDashboard() {
   const records = historyManager.getRecords();
   const totalTests = records.length;
-  const totalBadges = storage.get("typePlayBadges", []).length;
+  const totalBadges = achievementsManager.getUnlockedCount();
   
+  const hWpmEl = document.getElementById("highestWpm");
+  const aWpmEl = document.getElementById("avgWpm");
+  const hAccEl = document.getElementById("highestAcc");
+  const aAccEl = document.getElementById("avgAcc");
+  const tWordsEl = document.getElementById("totalWordsTyped");
+  const tCharsEl = document.getElementById("totalCharsTyped");
+  const hoursEl = document.getElementById("hoursPracticed");
+  const tTestsEl = document.getElementById("totalTests");
+  
+  const gPlayEl = document.getElementById("gamesPlayedStat");
+  const lCompEl = document.getElementById("lessonsCompletedStat");
+  const xpEl = document.getElementById("xpEarnedStat");
+  const coinsEl = document.getElementById("coinsEarnedStat");
+  const streakEl = document.getElementById("currentStreak");
+  const lStreakEl = document.getElementById("longestStreakStat");
+  const bestDayEl = document.getElementById("bestDayStat");
+  const tBadgesEl = document.getElementById("totalBadgesEarned");
+
+  // Sync hero stats
+  const heroStatTests = document.getElementById("heroStatTests");
+  const heroStatWpm = document.getElementById("heroStatWpm");
+  const heroStatStreak = document.getElementById("heroStatStreak");
+  const heroStatAcc = document.getElementById("heroStatAcc");
+
   if (totalTests === 0) {
-    dom.highestWpmDisplay.textContent = "0";
-    dom.avgWpmDisplay.textContent = "0";
-    dom.highestAccDisplay.textContent = "0%";
-    dom.avgAccDisplay.textContent = "0%";
-    dom.totalTestsDisplay.textContent = "0";
-    dom.totalTimeDisplay.textContent = "0s";
-    dom.currentStreakDisplay.textContent = "0 days";
-    if (dom.totalCharsTyped) dom.totalCharsTyped.textContent = "0";
-    if (dom.totalWordsTyped) dom.totalWordsTyped.textContent = "0";
-    if (dom.totalBadgesEarned) dom.totalBadgesEarned.textContent = totalBadges;
+    if (hWpmEl) hWpmEl.textContent = "0";
+    if (aWpmEl) aWpmEl.textContent = "0";
+    if (hAccEl) hAccEl.textContent = "0%";
+    if (aAccEl) aAccEl.textContent = "0%";
+    if (tWordsEl) tWordsEl.textContent = "0";
+    if (tCharsEl) tCharsEl.textContent = "0";
+    if (hoursEl) hoursEl.textContent = "0h";
+    if (tTestsEl) tTestsEl.textContent = "0";
+    
+    if (gPlayEl) gPlayEl.textContent = "0";
+    if (lCompEl) lCompEl.textContent = "0";
+    if (xpEl) xpEl.textContent = "0";
+    if (coinsEl) coinsEl.textContent = "0";
+    if (streakEl) streakEl.textContent = "0";
+    if (lStreakEl) lStreakEl.textContent = "0";
+    if (bestDayEl) bestDayEl.textContent = "—";
+    if (tBadgesEl) tBadgesEl.textContent = totalBadges;
+
+    if (heroStatTests) heroStatTests.textContent = "0";
+    if (heroStatWpm) heroStatWpm.textContent = "0";
+    if (heroStatStreak) heroStatStreak.textContent = "0";
+    if (heroStatAcc) heroStatAcc.textContent = "—";
     return;
   }
 
@@ -1392,21 +1747,58 @@ function updateDashboard() {
   const avgAcc = Math.round(records.reduce((sum, r) => sum + r.accuracy, 0) / totalTests);
   const totalDuration = records.reduce((sum, r) => sum + r.duration, 0);
   const streak = calculateStreak(records);
-  
+  const longestStreak = storage.get("typePlayLongestStreak", streak);
+  if (streak > longestStreak) {
+    storage.set("typePlayLongestStreak", streak);
+  }
+
   const totalChars = records.reduce((sum, r) => sum + (r.paragraph ? r.paragraph.length : 0), 0);
   const totalWords = records.reduce((sum, r) => sum + (r.paragraph ? r.paragraph.split(/\s+/).length : 0), 0);
+  const hours = (totalDuration / 3600).toFixed(1);
 
-  animateNumber(dom.highestWpmDisplay, 0, highestWpm, 1000);
-  animateNumber(dom.avgWpmDisplay, 0, avgWpm, 1000);
-  dom.highestAccDisplay.textContent = `${highestAcc}%`;
-  dom.avgAccDisplay.textContent = `${avgAcc}%`;
-  dom.totalTestsDisplay.textContent = totalTests;
-  dom.totalTimeDisplay.textContent = `${totalDuration}s`;
-  dom.currentStreakDisplay.textContent = `${streak} ${streak === 1 ? "day" : "days"}`;
-  
-  if (dom.totalCharsTyped) dom.totalCharsTyped.textContent = totalChars;
-  if (dom.totalWordsTyped) dom.totalWordsTyped.textContent = totalWords;
-  if (dom.totalBadgesEarned) dom.totalBadgesEarned.textContent = totalBadges;
+  // Best Typing Day
+  let bestDay = "—";
+  const dayMap = {};
+  records.forEach(r => {
+    const d = new Date(r.date);
+    const dayStr = d.toLocaleDateString();
+    if (!dayMap[dayStr]) dayMap[dayStr] = { sum: 0, count: 0 };
+    dayMap[dayStr].sum += r.wpm;
+    dayMap[dayStr].count++;
+  });
+  let highestAvg = 0;
+  for (let day in dayMap) {
+    const avg = dayMap[day].sum / dayMap[day].count;
+    if (avg > highestAvg) {
+      highestAvg = avg;
+      bestDay = day;
+    }
+  }
+
+  // Animate counter values
+  if (hWpmEl) animateNumber(hWpmEl, 0, highestWpm, 800);
+  if (aWpmEl) animateNumber(aWpmEl, 0, avgWpm, 800);
+  if (hAccEl) hAccEl.textContent = `${highestAcc}%`;
+  if (aAccEl) aAccEl.textContent = `${avgAcc}%`;
+  if (tWordsEl) animateNumber(tWordsEl, 0, totalWords, 800);
+  if (tCharsEl) animateNumber(tCharsEl, 0, totalChars, 800);
+  if (hoursEl) hoursEl.textContent = `${hours}h`;
+  if (tTestsEl) animateNumber(tTestsEl, 0, totalTests, 800);
+
+  if (gPlayEl) animateNumber(gPlayEl, 0, storage.get("typePlayGamesPlayed", 0), 800);
+  if (lCompEl) animateNumber(lCompEl, 0, lessonsManager.completedLevels.length, 800);
+  if (xpEl) animateNumber(xpEl, 0, profileManager.xp, 800);
+  if (coinsEl) animateNumber(coinsEl, 0, profileManager.coins, 800);
+  if (streakEl) animateNumber(streakEl, 0, streak, 800);
+  if (lStreakEl) animateNumber(lStreakEl, 0, longestStreak, 800);
+  if (bestDayEl) bestDayEl.textContent = bestDay;
+  if (tBadgesEl) animateNumber(tBadgesEl, 0, totalBadges, 800);
+
+  // Set hero stats
+  if (heroStatTests) heroStatTests.textContent = totalTests;
+  if (heroStatWpm) heroStatWpm.textContent = highestWpm;
+  if (heroStatStreak) heroStatStreak.textContent = streak;
+  if (heroStatAcc) heroStatAcc.textContent = `${avgAcc}%`;
 }
 
 function animateNumber(element, start, end, duration) {
@@ -1662,7 +2054,7 @@ function startLesson(lessonId, text) {
   switchTab("practice");
   loadNextParagraph();
   
-  alert(`📖 Loaded Campaign Level ${lessonId}! Press "Start Test" or Enter key to begin.`);
+  toast.info(`📖 Loaded Campaign Level ${lessonId}! Press "Start Test" or Enter key to begin.`);
 }
 
 // Daily Challenges Renderer
@@ -1726,7 +2118,7 @@ function startDailyChallenge(chalType) {
   switchTab("practice");
   loadNextParagraph();
   
-  alert(`📅 Loaded Daily ${chalType.toUpperCase()} Challenge! Complete the run to unlock rewards.`);
+  toast.info(`📅 Loaded Daily ${chalType.toUpperCase()} Challenge! Complete the run to unlock rewards.`);
 }
 
 // Shop items catalog definition
@@ -1913,3 +2305,106 @@ function handleComboUpdate(combo) {
     dom.comboContainer.classList.add("hidden");
   }
 }
+
+// Daily Goals UI rendering
+function renderDailyGoalsUI() {
+  const goalsList = document.getElementById("goalsList");
+  const compText = document.getElementById("goalsCompletionText");
+  const overallFill = document.getElementById("goalsOverallFill");
+
+  if (!goalsList) return;
+
+  const goals = goalsManager.getGoals();
+  const completedCount = goalsManager.getCompletedCount();
+  const completionPercent = goalsManager.getCompletionPercent();
+
+  if (compText) compText.textContent = `${completedCount} / ${goals.length} complete`;
+  if (overallFill) overallFill.style.width = `${completionPercent}%`;
+
+  goalsList.innerHTML = "";
+  goals.forEach(goal => {
+    const card = document.createElement("div");
+    card.className = `goal-item ${goal.completed ? "goal-done" : ""}`;
+    card.innerHTML = `
+      <span class="goal-icon">${goal.icon}</span>
+      <div class="goal-body">
+        <div class="goal-title">${goal.title}</div>
+        <div class="goal-progress-bar">
+          <div class="goal-progress-fill" style="width: ${goal.progressPercent}%"></div>
+        </div>
+        <div class="goal-progress-text">${goal.currentProgress} / ${goal.target} ${goal.unit === "seconds" ? "sec" : goal.unit}</div>
+      </div>
+      <span class="goal-check">${goal.completed ? "✅" : "⏳"}</span>
+    `;
+    goalsList.appendChild(card);
+  });
+}
+
+// Custom text counting & statistics
+function updateCustomTextCounters() {
+  const text = dom.customInput ? dom.customInput.value : "";
+  const chars = text.length;
+  const words = text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
+  
+  // Est time: words / 60 WPM
+  const estSecs = Math.round((words / 60) * 60);
+
+  const charEl = document.getElementById("customCharCount");
+  const wordEl = document.getElementById("customWordCount");
+  const estEl = document.getElementById("customEstTime");
+
+  if (charEl) charEl.textContent = chars;
+  if (wordEl) wordEl.textContent = words;
+  if (estEl) estEl.textContent = `${estSecs}s`;
+}
+
+// Save custom text to history of 5 recent pasted items
+function saveCustomTextToRecent(text) {
+  if (text.trim().length === 0) return;
+  const recent = storage.get("typePlayRecentCustom", []);
+  
+  // Remove if exists
+  const filtered = recent.filter(t => t !== text);
+  filtered.unshift(text);
+  
+  // Cap at 5
+  storage.set("typePlayRecentCustom", filtered.slice(0, 5));
+}
+
+// Render recent custom texts on the tab panel
+function renderRecentCustomTexts() {
+  const listEl = document.getElementById("recentTextsList");
+  if (!listEl) return;
+
+  const recent = storage.get("typePlayRecentCustom", []);
+  listEl.innerHTML = "";
+
+  if (recent.length === 0) {
+    listEl.innerHTML = `<p style="font-size:12px;color:var(--text-muted);padding:10px 0;">No recent custom texts found.</p>`;
+    return;
+  }
+
+  recent.forEach((text, idx) => {
+    const item = document.createElement("div");
+    item.className = "recent-text-item";
+    item.innerHTML = `
+      <span class="recent-text-preview">#${idx + 1}: ${text.substring(0, 60)}...</span>
+      <button class="btn btn-sm btn-outline">Load</button>
+    `;
+
+    item.querySelector("button").addEventListener("click", () => {
+      soundEngine.play("btnClick");
+      if (dom.customInput) {
+        dom.customInput.value = text;
+        updateCustomTextCounters();
+        toast.success("Loaded recent text!");
+        
+        // Load next paragraph
+        if (!isTestActive) loadNextParagraph();
+      }
+    });
+
+    listEl.appendChild(item);
+  });
+}
+

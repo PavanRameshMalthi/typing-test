@@ -3,16 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Speed Typer - Gaming & Learning Platform</title>
+  <title>TypePlay — Typing Practice & Gaming Platform</title>
   
   <!-- SEO Meta Tags -->
-  <meta name="description" content="Improve your typing with the Typing Learning & Gaming Platform. Real-time statistics, keyboard mistake heatmaps, customizable challenges, lessons, certificates, typing games, and progress charts." />
+  <meta name="description" content="TypePlay: A premium typing practice and gaming platform. Improve your WPM, accuracy, and keyboard skills with interactive lessons, exciting games, achievements, daily challenges, and real-time performance tracking." />
+  <meta name="keywords" content="typing test, WPM, typing speed, keyboard practice, typing game, monkeytype alternative" />
   <meta name="theme-color" content="#4facfe" />
+  <meta property="og:title" content="TypePlay — Typing Practice & Gaming Platform" />
+  <meta property="og:description" content="Practice, play, and master your keyboard with TypePlay." />
   
   <!-- PWA Manifest & Icons -->
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
   
+  <!-- Accessibility: skip link target -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -21,27 +27,27 @@
   <!-- CSS Stylesheet -->
   <link rel="stylesheet" href="css/style.css" />
   
-  <!-- Third-party CDN Libraries -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- Third-party CDN Libraries (deferred for performance) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 </head>
 <body class="theme-dark">
-  <div class="background-gradients">
+  <div class="background-gradients" aria-hidden="true">
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
   </div>
 
-  <div class="app-container">
-    <!-- Header -->
-    <header class="main-header glass-card">
+  <div class="app-container" id="main-content">
+    <!-- ======================== HEADER ======================== -->
+    <header class="main-header glass-card" role="banner">
       <div class="logo-area">
-        <button id="navHamburger" class="hamburger-btn" aria-label="Toggle Navigation Drawer" aria-expanded="false">
+        <button id="navHamburger" class="hamburger-btn" aria-label="Toggle Navigation Drawer" aria-expanded="false" aria-controls="platformNav">
           <span></span>
           <span></span>
           <span></span>
         </button>
-        <img src="assets/logo.svg" alt="TypePlay Logo" class="header-logo" />
+        <img src="assets/logo.svg" alt="TypePlay Logo" class="header-logo" width="50" height="50" />
         <div>
           <h1>TypePlay</h1>
           <p class="tagline">Practice, play, and master keyboard positions</p>
@@ -49,64 +55,109 @@
       </div>
       
       <!-- User Profile Widget -->
-      <div class="profile-banner-widget">
-        <div class="avatar-container" id="profileAvatar">👽</div>
+      <div class="profile-banner-widget" aria-label="User profile summary">
+        <div class="avatar-container" id="profileAvatar" aria-label="User avatar" role="img">👽</div>
         <div class="profile-details">
           <div class="profile-top">
-            <span class="profile-name">Typer Cadet</span>
-            <span class="profile-level" id="profileLevel">Lvl 1</span>
+            <span class="profile-name" id="profileUsername">Typer Cadet</span>
+            <span class="profile-level" id="profileLevel" aria-label="Current level">Lvl 1</span>
           </div>
-          <div class="xp-progress-bar">
+          <div class="xp-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="XP Progress">
             <div class="xp-progress-fill" id="xpProgressFill" style="width: 0%"></div>
           </div>
           <div class="profile-bottom">
-            <span class="xp-text" id="xpText">0 / 100 XP</span>
-            <span class="coins-balance">🪙 <span id="coinsText">0</span></span>
+            <span class="xp-text" id="xpText" aria-live="polite">0 / 100 XP</span>
+            <span class="coins-balance">🪙 <span id="coinsText" aria-live="polite">0</span></span>
           </div>
         </div>
       </div>
       
-      <div class="header-controls">
-        <button id="soundToggleBtn" class="btn btn-outline" aria-label="Toggle Sound">🔊 Sound On</button>
+      <div class="header-controls" role="toolbar" aria-label="App controls">
+        <button id="soundToggleBtn" class="btn btn-outline" aria-label="Toggle Sound" aria-pressed="true">🔊 Sound On</button>
         <button id="fullscreenBtn" class="btn btn-outline" aria-label="Toggle Fullscreen">🗗 Fullscreen</button>
-        <button id="openShortcutsBtn" class="btn btn-outline" aria-label="Keyboard Shortcuts">⌨️ Shortcuts</button>
+        <button id="openShortcutsBtn" class="btn btn-outline" aria-label="View Keyboard Shortcuts">⌨️ Shortcuts</button>
         <button id="openLeaderboardBtn" class="btn btn-outline glow-btn" aria-label="Open Leaderboard">🏆 Leaderboard</button>
       </div>
     </header>
 
-    <!-- Platform Navigation Tabs -->
-    <nav class="platform-tabs glass-card" role="tablist" aria-label="Main Navigation">
+    <!-- ======================== NAV TABS ======================== -->
+    <nav id="platformNav" class="platform-tabs glass-card" role="tablist" aria-label="Main Navigation">
       <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab-practice" tabindex="0" data-tab="practice">🎯 Practice</button>
-      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-lessons" tabindex="0" data-tab="lessons">📖 Levels</button>
-      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-games" tabindex="0" data-tab="games">🎮 Games</button>
-      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-challenges" tabindex="0" data-tab="challenges">📅 Challenges</button>
-      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-shop" tabindex="0" data-tab="shop">🛍️ Shop</button>
-      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-stats" tabindex="0" data-tab="stats">📊 Stats & History</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-lessons" tabindex="-1" data-tab="lessons">📖 Levels</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-games" tabindex="-1" data-tab="games">🎮 Games</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-challenges" tabindex="-1" data-tab="challenges">📅 Challenges</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-achievements" tabindex="-1" data-tab="achievements">🏅 Achievements</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-multiplayer" tabindex="-1" data-tab="multiplayer">🌐 Multiplayer</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-stats" tabindex="-1" data-tab="stats">📊 Stats</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-profile" tabindex="-1" data-tab="profile">👤 Profile</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-shop" tabindex="-1" data-tab="shop">🛍️ Shop</button>
+      <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-settings" tabindex="-1" data-tab="settings">⚙️ Settings</button>
     </nav>
 
-    <!-- Main Platform Grid Dashboard -->
-    <main class="main-grid">
-      
+    <!-- ======================== MAIN CONTENT ======================== -->
+    <main class="main-grid" id="mainGrid">
+
       <!-- ==================== TAB: PRACTICE ==================== -->
-      <div class="tab-content active" id="tab-practice">
-        <!-- Hero Section -->
-        <section class="hero-section glass-card fade-up-anim">
-          <div class="hero-content">
-            <span class="hero-subtitle">🎯 Practice Letters • Words • Sentences • Coding • Games</span>
-            <h2 class="hero-heading">Typing Learning & <span class="highlight-text">Gaming Platform</span></h2>
-            <p class="hero-desc">Learn touch typing through interactive lessons, engaging games, coding challenges, and real-time performance tracking. Improve your typing speed, accuracy, and confidence while having fun.</p>
-            <div class="hero-actions">
-              <button id="heroStartBtn" class="btn btn-success btn-start glow-btn">Start Typing</button>
-              <button id="heroPracticeBtn" class="btn btn-outline btn-theme">Practice Mode</button>
+      <div class="tab-content active" id="tab-practice" role="tabpanel" aria-labelledby="tab-practice-btn">
+
+        <!-- HERO SECTION — Redesigned with cleaner hierarchy -->
+        <section class="hero-section glass-card fade-up-anim" aria-label="Welcome and quick start">
+          <div class="hero-layout">
+            <div class="hero-top">
+              <div class="hero-text">
+                <span class="hero-subtitle">🎯 Practice • Lessons • Games • Challenges</span>
+                <h2 class="hero-heading">Typing Learning &amp; <span class="highlight-text">Gaming Platform</span></h2>
+                <p class="hero-desc">Boost your WPM and accuracy through interactive lessons, engaging games, and real-time performance tracking.</p>
+                <div class="hero-actions">
+                  <button id="heroStartBtn" class="btn btn-success btn-start glow-btn" aria-label="Start a typing test now">🚀 Start Practice</button>
+                  <button id="heroPracticeBtn" class="btn btn-outline btn-theme" aria-label="Focus on typing area">⌨️ Practice Mode</button>
+                </div>
+              </div>
+
+              <!-- Quick Stats Panel on right of hero -->
+              <div class="hero-quick-stats" aria-label="Your quick stats">
+                <div class="hero-quick-stat">
+                  <span class="hero-qs-value" id="heroStatTests">0</span>
+                  <span class="hero-qs-label">Tests Done</span>
+                </div>
+                <div class="hero-quick-stat">
+                  <span class="hero-qs-value" id="heroStatWpm">0</span>
+                  <span class="hero-qs-label">Best WPM</span>
+                </div>
+                <div class="hero-quick-stat">
+                  <span class="hero-qs-value" id="heroStatStreak">0</span>
+                  <span class="hero-qs-label">Day Streak</span>
+                </div>
+                <div class="hero-quick-stat">
+                  <span class="hero-qs-value" id="heroStatAcc">—</span>
+                  <span class="hero-qs-label">Avg Acc</span>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        <!-- Configurations Panel -->
-        <section class="config-panel glass-card" aria-label="Typing test configuration">
+        <!-- DAILY GOALS WIDGET -->
+        <section class="glass-card" aria-label="Daily Goals">
+          <div class="daily-goals-widget" id="dailyGoalsWidget">
+            <div class="goals-header">
+              <div class="goals-title">📋 Daily Goals</div>
+              <span class="goals-completion-text" id="goalsCompletionText">0 / 6 complete</span>
+            </div>
+            <div class="goals-overall-bar" role="progressbar" aria-label="Overall daily goals progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div class="goals-overall-fill" id="goalsOverallFill" style="width:0%"></div>
+            </div>
+            <div class="goals-list" id="goalsList">
+              <!-- Dynamically populated by goals.js -->
+            </div>
+          </div>
+        </section>
+
+        <!-- CONFIGURATIONS PANEL -->
+        <section class="config-panel glass-card" aria-label="Typing test configuration" id="configPanel">
           <div class="config-group">
             <label for="practiceTypeSelect">🎯 Practice Type:</label>
-            <select id="practiceTypeSelect">
+            <select id="practiceTypeSelect" aria-label="Select practice type">
               <option value="paragraph" selected>Standard Paragraphs</option>
               <option value="letters">Letters Practice</option>
               <option value="words">Word Practice</option>
@@ -119,24 +170,56 @@
 
           <div class="config-group" id="practiceSubtypeGroup">
             <label for="practiceSubtypeSelect">⚙️ Preset:</label>
-            <select id="practiceSubtypeSelect">
+            <select id="practiceSubtypeSelect" aria-label="Select practice preset">
               <!-- Dynamically populated subtypes -->
             </select>
           </div>
 
+          <!-- DIFFICULTY CARDS — Replacing the old select -->
           <div class="config-group" id="difficultyGroup">
-            <label for="difficultySelect">⚡ Difficulty:</label>
-            <select id="difficultySelect">
-              <option value="easy">Easy (Simple lowercase)</option>
-              <option value="medium" selected>Medium (Standard capitalization)</option>
-              <option value="hard">Hard (Advanced punctuation)</option>
-              <option value="expert">Expert (Numbers, symbols & code)</option>
+            <label>⚡ Difficulty:</label>
+            <div class="difficulty-cards-group" role="radiogroup" aria-label="Select difficulty level">
+              <div class="difficulty-card" data-diff="easy" role="radio" aria-checked="false" tabindex="0"
+                   aria-label="Easy difficulty: Perfect for beginners">
+                <div class="diff-card-selected-ring" aria-hidden="true">✓</div>
+                <span class="diff-card-icon">🌱</span>
+                <span class="diff-card-name">Easy</span>
+                <span class="diff-card-desc">Simple words, basic punctuation</span>
+              </div>
+              <div class="difficulty-card selected" data-diff="medium" role="radio" aria-checked="true" tabindex="0"
+                   aria-label="Medium difficulty: Recommended for most typists">
+                <div class="diff-card-selected-ring" aria-hidden="true">✓</div>
+                <span class="diff-card-icon">⚡</span>
+                <span class="diff-card-name">Medium</span>
+                <span class="diff-card-desc">Longer words, mixed punctuation</span>
+              </div>
+              <div class="difficulty-card" data-diff="hard" role="radio" aria-checked="false" tabindex="0"
+                   aria-label="Hard difficulty: Advanced punctuation and complex sentences">
+                <div class="diff-card-selected-ring" aria-hidden="true">✓</div>
+                <span class="diff-card-icon">🔥</span>
+                <span class="diff-card-name">Hard</span>
+                <span class="diff-card-desc">Advanced punctuation, dashes, quotes</span>
+              </div>
+              <div class="difficulty-card" data-diff="expert" role="radio" aria-checked="false" tabindex="0"
+                   aria-label="Expert difficulty: Programming syntax, numbers, and symbols">
+                <div class="diff-card-selected-ring" aria-hidden="true">✓</div>
+                <span class="diff-card-icon">💀</span>
+                <span class="diff-card-name">Expert</span>
+                <span class="diff-card-desc">Code, numbers, symbols</span>
+              </div>
+            </div>
+            <!-- Hidden select for backward compatibility with JS -->
+            <select id="difficultySelect" class="sr-only" aria-label="Difficulty (hidden, controlled by cards)" aria-hidden="true">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+              <option value="expert">Expert</option>
             </select>
           </div>
           
           <div class="config-group">
             <label for="durationSelect">⏱️ Time Limit:</label>
-            <select id="durationSelect">
+            <select id="durationSelect" aria-label="Select time limit">
               <option value="10">10 Seconds</option>
               <option value="30">30 Seconds</option>
               <option value="60" selected>1 Minute</option>
@@ -144,29 +227,74 @@
             </select>
           </div>
 
-          <div class="mode-toggles">
-            <button id="modePractice" class="btn mode-btn active">Practice</button>
-            <button id="modeZen" class="btn mode-btn">Zen Mode</button>
+          <div class="mode-toggles" role="group" aria-label="Typing mode">
+            <button id="modePractice" class="btn mode-btn active" aria-pressed="true">Practice</button>
+            <button id="modeZen" class="btn mode-btn" aria-pressed="false">Zen Mode</button>
           </div>
 
           <div class="custom-para-area">
-            <button id="customInputToggle" class="btn btn-outline">✏️ Custom Text</button>
+            <button id="customInputToggle" class="btn btn-outline" aria-expanded="false" aria-controls="customInputCard">✏️ Custom Text</button>
           </div>
         </section>
 
-        <!-- Custom Input Textarea Card (Toggled) -->
-        <section id="customInputCard" class="custom-input-card glass-card hidden" aria-label="Custom paragraph input">
-          <h3>Paste Custom Paragraph</h3>
-          <textarea id="customInput" placeholder="Enter custom typing text here. Typing Speed Test will use this content when you start..."></textarea>
+        <!-- CUSTOM INPUT CARD — Enhanced -->
+        <section id="customInputCard" class="custom-input-card enhanced glass-card hidden" aria-label="Custom text input">
+          <div class="custom-input-header">
+            <h3>Custom Text</h3>
+            <div class="custom-input-tabs" role="tablist" aria-label="Custom text input method">
+              <button class="custom-tab-btn active" data-custom-tab="paste" role="tab" aria-selected="true">✏️ Paste</button>
+              <button class="custom-tab-btn" data-custom-tab="file" role="tab" aria-selected="false">📁 Upload</button>
+              <button class="custom-tab-btn" data-custom-tab="ai" role="tab" aria-selected="false">🤖 AI (Soon)</button>
+              <button class="custom-tab-btn" data-custom-tab="recent" role="tab" aria-selected="false">🕐 Recent</button>
+            </div>
+          </div>
+
+          <!-- Paste Tab -->
+          <div id="customTabPaste" class="custom-tab-panel">
+            <textarea id="customInput" placeholder="Paste or type your custom text here. The typing test will use this content when you start..." rows="5" aria-label="Custom text input area"></textarea>
+            <div class="custom-text-counter" aria-live="polite">
+              <span>Characters: <strong id="customCharCount">0</strong></span>
+              <span>Words: <strong id="customWordCount">0</strong></span>
+              <span>Est. time (60 WPM): <strong id="customEstTime">0s</strong></span>
+            </div>
+          </div>
+
+          <!-- File Upload Tab -->
+          <div id="customTabFile" class="custom-tab-panel hidden">
+            <label for="customFileInput" class="btn btn-outline" style="width:fit-content; cursor:pointer;">
+              📁 Choose .txt File
+              <input type="file" id="customFileInput" accept=".txt,.md" class="sr-only" aria-label="Upload a text file" />
+            </label>
+            <p style="font-size:13px;color:var(--text-muted);margin-top:8px;">Supported formats: .txt, .md — Max 10,000 characters</p>
+            <p id="fileUploadStatus" style="font-size:13px;color:var(--correct);margin-top:6px;"></p>
+          </div>
+
+          <!-- AI Placeholder Tab -->
+          <div id="customTabAi" class="custom-tab-panel hidden">
+            <div class="custom-ai-placeholder">
+              <span class="custom-ai-icon">🤖</span>
+              <div class="custom-ai-title">AI Paragraph Generator</div>
+              <div class="custom-ai-desc">Generate custom typing passages powered by AI. This feature is coming in a future update!</div>
+              <button class="btn btn-outline" disabled aria-disabled="true">Generate Paragraph (Coming Soon)</button>
+            </div>
+          </div>
+
+          <!-- Recent Texts Tab -->
+          <div id="customTabRecent" class="custom-tab-panel hidden">
+            <p style="font-size:13px;color:var(--text-muted);margin-bottom:10px;">Your 5 most recent custom texts:</p>
+            <div class="recent-texts-list" id="recentTextsList" aria-label="Recent custom texts">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
         </section>
 
-        <!-- Typing Playfield -->
+        <!-- TYPING PLAYFIELD -->
         <section class="typing-playfield glass-card" aria-label="Typing test area">
           <!-- Progress Info & Timers -->
           <div class="playfield-header">
             <!-- Circular Timer -->
-            <div id="timerWrapper" class="timer-wrapper">
-              <svg class="timer-svg" viewBox="0 0 100 100">
+            <div id="timerWrapper" class="timer-wrapper" role="timer" aria-label="Time remaining">
+              <svg class="timer-svg" viewBox="0 0 100 100" aria-hidden="true">
                 <circle cx="50" cy="50" r="45" class="timer-bg-circle"></circle>
                 <circle id="timerCircle" cx="50" cy="50" r="45" class="timer-progress-circle"></circle>
                 <text id="timerText" x="50" y="56" class="timer-text">60</text>
@@ -175,30 +303,30 @@
             
             <!-- Modern Horizontal Progress Bar -->
             <div class="progress-bar-container">
-              <div class="progress-bar-label">Typing Progress</div>
-              <div class="progress-track">
+              <div class="progress-bar-label" id="progressBarLabel">Typing Progress</div>
+              <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Typing progress">
                 <div id="progressBar" class="progress-fill"></div>
               </div>
             </div>
           </div>
 
           <!-- Combo Widget overlay -->
-          <div class="combo-container hidden" id="comboContainer">
+          <div class="combo-container hidden" id="comboContainer" aria-live="polite" aria-label="Combo counter">
             <span class="combo-label">COMBO</span>
             <span class="combo-number" id="comboNumber">0</span>
           </div>
 
           <!-- The typing active display -->
-          <div id="typingContainer" class="typing-container">
-            <div id="pausedOverlay" class="paused-overlay hidden">
+          <div id="typingContainer" class="typing-container" role="main" aria-label="Typing display area">
+            <div id="pausedOverlay" class="paused-overlay hidden" role="status" aria-live="assertive">
               <div class="paused-message">
                 <h2>PAUSED</h2>
-                <p>Click "Resume" or press Escape to continue typing</p>
+                <p>Click "Resume" or press <kbd>Escape</kbd> to continue typing</p>
               </div>
             </div>
 
             <!-- Results Card Overlay -->
-            <div id="resultsOverlay" class="results-overlay hidden">
+            <div id="resultsOverlay" class="results-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="resTitle">
               <div class="results-card glass-card">
                 <h2 id="resTitle">🎉 Test Completed!</h2>
                 <div class="results-stats-grid">
@@ -228,62 +356,62 @@
                   <span>Coins: <strong id="resCoins">🪙 +0</strong></span>
                 </div>
                 <div class="results-actions">
-                  <button id="resPracticeAgainBtn" class="btn btn-success btn-start glow-btn">🟢 Practice Again (Enter)</button>
+                  <button id="resPracticeAgainBtn" class="btn btn-success btn-start glow-btn">🟢 Practice Again <kbd>Enter</kbd></button>
                   <button id="resReplayMistakesBtn" class="btn btn-primary btn-replay">🔵 Replay Mistakes</button>
                   <button id="resCertBtn" class="btn btn-outline btn-theme">📜 Certificate</button>
                 </div>
               </div>
             </div>
 
-            <div id="paragraphDisplay" class="paragraph-display">
+            <div id="paragraphDisplay" class="paragraph-display" aria-label="Text to type" aria-live="off">
               <!-- Dynamically populated character spans -->
             </div>
           </div>
 
           <!-- Hidden input capturing keystrokes -->
-          <textarea id="typingInput" class="typing-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Press Enter or Click Start to type..." disabled></textarea>
+          <textarea id="typingInput" class="typing-input" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Press Enter or Click Start to type..." disabled aria-label="Typing input field (hidden)" tabindex="-1"></textarea>
 
           <!-- Control Action Buttons -->
-          <div class="control-actions">
-            <button id="startBtn" class="btn btn-success btn-start glow-btn">🟢 Start Test (Enter)</button>
-            <button id="pauseBtn" class="btn btn-danger btn-stop hidden">🔴 Pause (Esc)</button>
-            <button id="resumeBtn" class="btn btn-success btn-start glow-btn hidden">🟢 Resume (Esc)</button>
-            <button id="restartBtn" class="btn btn-warning btn-restart">🟠 Restart (Ctrl+R)</button>
-            <button id="retestBtn" class="btn btn-secondary">⚪ Reset Metrics</button>
+          <div class="control-actions" role="group" aria-label="Typing test controls">
+            <button id="startBtn" class="btn btn-success btn-start glow-btn">🟢 Start Test <kbd>Enter</kbd></button>
+            <button id="pauseBtn" class="btn btn-danger btn-stop hidden">🔴 Pause <kbd>Esc</kbd></button>
+            <button id="resumeBtn" class="btn btn-success btn-start glow-btn hidden">🟢 Resume <kbd>Esc</kbd></button>
+            <button id="restartBtn" class="btn btn-warning btn-restart">🟠 Restart <kbd>Ctrl+R</kbd></button>
+            <button id="retestBtn" class="btn btn-secondary">⚪ Reset</button>
             <button id="replayMistakesBtn" class="btn btn-primary btn-replay">🔵 Replay Mistakes</button>
           </div>
 
           <!-- Real-Time Metrics Bar -->
-          <div id="liveStatsBar" class="live-stats-bar">
+          <div id="liveStatsBar" class="live-stats-bar" aria-label="Live typing statistics" aria-live="polite">
             <div class="stat-bubble">
-              <span class="bubble-val" id="wpm">0</span>
+              <span class="bubble-val" id="wpm" aria-label="Words per minute">0</span>
               <span class="bubble-lbl">WPM</span>
             </div>
             <div class="stat-bubble">
-              <span class="bubble-val" id="cpm">0</span>
+              <span class="bubble-val" id="cpm" aria-label="Characters per minute">0</span>
               <span class="bubble-lbl">CPM</span>
             </div>
             <div class="stat-bubble">
-              <span class="bubble-val" id="accuracy">100%</span>
+              <span class="bubble-val" id="accuracy" aria-label="Accuracy percentage">100%</span>
               <span class="bubble-lbl">Accuracy</span>
             </div>
             <div class="stat-bubble">
-              <span class="bubble-val" id="mistakes">0</span>
+              <span class="bubble-val" id="mistakes" aria-label="Mistake count">0</span>
               <span class="bubble-lbl">Mistakes</span>
             </div>
             <div class="stat-bubble">
-              <span class="bubble-val" id="typedChars">0</span>
+              <span class="bubble-val" id="typedChars" aria-label="Characters typed">0</span>
               <span class="bubble-lbl">Typed</span>
             </div>
             <div class="stat-bubble">
-              <span class="bubble-val" id="remainingChars">0</span>
+              <span class="bubble-val" id="remainingChars" aria-label="Characters remaining">0</span>
               <span class="bubble-lbl">Remaining</span>
             </div>
           </div>
         </section>
 
         <!-- Finger Guide Widget -->
-        <section class="finger-guide-panel glass-card">
+        <section class="finger-guide-panel glass-card" aria-label="Finger placement guide">
           <div class="finger-guide-display" id="fingerGuideDisplay">
             👉 Place fingers on Home Row. Press <span class="highlight-val" id="nextKeyGuide">Start</span> with <span class="highlight-val" id="nextFingerGuide">proper fingers</span>.
           </div>
@@ -291,7 +419,7 @@
 
         <!-- Live Keyboard Visualizer / Heatmap Panel -->
         <section class="heatmap-panel glass-card" aria-label="Keyboard typing visualizer">
-          <div class="keyboard-container" id="visualizerKeyboard">
+          <div class="keyboard-container" id="visualizerKeyboard" role="presentation" aria-hidden="true">
             <!-- Keyboard Row 1 -->
             <div class="keyboard-row">
               <div class="key spec-key" data-key="~">~</div>
@@ -372,9 +500,9 @@
       </div>
 
       <!-- ==================== TAB: LEVELS ==================== -->
-      <div class="tab-content hidden" id="tab-lessons">
+      <div class="tab-content hidden" id="tab-lessons" role="tabpanel" aria-labelledby="tab-lessons-btn">
         <!-- Level Campaign Progression Header Card -->
-        <section class="campaign-header-card glass-card">
+        <section class="campaign-header-card glass-card" aria-label="Campaign progress">
           <h2 class="panel-title">🏆 Campaign Levels Map</h2>
           <p class="panel-subtitle">Complete levels sequentially to test your layout speed, punctuation accuracy, and coding formats.</p>
           
@@ -394,10 +522,10 @@
           </div>
           
           <div class="campaign-progress-bar-container">
-            <div class="campaign-progress-bar-track">
+            <div class="campaign-progress-bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Campaign completion progress">
               <div class="campaign-progress-bar-fill" id="campaignProgressBarFill" style="width: 0%"></div>
             </div>
-            <div class="campaign-progress-bar-ascii" id="campaignProgressBarAscii">░░░░░░░░░░░░ 0%</div>
+            <div class="campaign-progress-bar-ascii" id="campaignProgressBarAscii" aria-hidden="true">░░░░░░░░░░░░ 0%</div>
           </div>
         </section>
 
@@ -409,7 +537,7 @@
       </div>
 
       <!-- ==================== TAB: GAMES ==================== -->
-      <div class="tab-content hidden" id="tab-games">
+      <div class="tab-content hidden" id="tab-games" role="tabpanel" aria-labelledby="tab-games-btn">
         <section class="games-panel glass-card">
           <div id="gameSelectionPanel">
             <h2 class="panel-title">🎮 Typing Gaming Platform</h2>
@@ -435,9 +563,9 @@
                 <button class="btn btn-primary start-game-btn" data-game="rocketRace">Play Rocket Race</button>
               </div>
               <div class="game-card glass-card">
-                <span class="game-icon">🏎️</span>
+                <span class="game-icon">🚗</span>
                 <h3>Car Racing</h3>
-                <p>Typing drives your car down the road. typos make you hit the brakes!</p>
+                <p>Typing drives your car down the road. Typos make you hit the brakes!</p>
                 <button class="btn btn-primary start-game-btn" data-game="carRacing">Play Car Racing</button>
               </div>
               <div class="game-card glass-card">
@@ -461,7 +589,7 @@
             <!-- Target canvas with results overlay inside container -->
             <div class="canvas-container">
               <!-- Game Results Overlay -->
-              <div id="gameResultsOverlay" class="results-overlay hidden">
+              <div id="gameResultsOverlay" class="results-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="gameResTitle">
                 <div class="results-card glass-card">
                   <h2 id="gameResTitle">🎉 Game Completed!</h2>
                   <div class="results-stats-grid">
@@ -495,7 +623,7 @@
                 </div>
               </div>
 
-              <canvas id="gameCanvas" width="800" height="500"></canvas>
+              <canvas id="gameCanvas" width="800" height="500" aria-label="Game canvas" role="application"></canvas>
             </div>
             
             <!-- Gaming instructions -->
@@ -505,14 +633,14 @@
       </div>
 
       <!-- ==================== TAB: CHALLENGES ==================== -->
-      <div class="tab-content hidden" id="tab-challenges">
+      <div class="tab-content hidden" id="tab-challenges" role="tabpanel" aria-labelledby="tab-challenges-btn">
         <section class="challenges-panel glass-card">
           <div class="challenges-header-row">
             <div>
               <h2 class="panel-title">📅 Challenges Arena</h2>
               <p class="panel-subtitle">Complete these custom runs to earn bonus XP and coins.</p>
             </div>
-            <div class="time-remaining-bubble" id="challengeTimeRemaining">
+            <div class="time-remaining-bubble" id="challengeTimeRemaining" aria-live="polite">
               ⏱️ Time Left Today: <span id="challengeCountdown">00h 00m</span>
             </div>
           </div>
@@ -566,77 +694,189 @@
         </section>
       </div>
 
-      <!-- ==================== TAB: SHOP ==================== -->
-      <div class="tab-content hidden" id="tab-shop">
-        <section class="shop-panel glass-card">
-          <div class="shop-header-row">
+      <!-- ==================== TAB: ACHIEVEMENTS ==================== -->
+      <div class="tab-content hidden" id="tab-achievements" role="tabpanel" aria-labelledby="tab-achievements-btn">
+        <section class="glass-card" aria-label="Achievements">
+          <div class="achievements-header-row">
             <div>
-              <h2 class="panel-title">🛍️ Rewards & Theme Shop</h2>
-              <p class="panel-subtitle">Deduct coins to purchase and equip customization items.</p>
+              <h2 class="panel-title">🏅 Achievements</h2>
+              <p class="panel-subtitle" id="achSubtitle">Unlock badges by hitting milestones in speed, accuracy, and consistency.</p>
             </div>
-            <div class="shop-balance-display">
-              Coin Balance: <span class="coins-balance">🪙 <span id="shopCoinsText">0</span></span>
+            <div class="achievements-completion-badge" aria-label="Achievement completion">
+              <div class="ach-completion-ring" aria-hidden="true">
+                <svg viewBox="0 0 36 36">
+                  <circle class="ach-ring-bg" cx="18" cy="18" r="15.9"/>
+                  <circle class="ach-ring-fill" id="achRingFill" cx="18" cy="18" r="15.9" stroke-dashoffset="100"/>
+                </svg>
+                <div class="ach-ring-text" id="achRingText">0%</div>
+              </div>
+              <div>
+                <div style="font-weight:700;font-size:15px;" id="achCompletionText">0 / 25 Unlocked</div>
+                <div style="font-size:12px;color:var(--text-muted)">Keep typing to earn more!</div>
+              </div>
             </div>
-          </div>
-          
-          <div class="shop-nav-tabs">
-            <button class="btn btn-outline shop-category-btn active" data-category="themes">🎨 Themes</button>
-            <button class="btn btn-outline shop-category-btn" data-category="cursors">🖱️ Cursors</button>
-            <button class="btn btn-outline shop-category-btn" data-category="avatars">👤 Avatars</button>
-            <button class="btn btn-outline shop-category-btn" data-category="badges">🏆 Badges</button>
           </div>
 
-          <div class="shop-items-grid" id="shopItemsGrid">
-            <!-- Dynamically populated shop items -->
+          <!-- Filter Tabs -->
+          <div class="achievements-filter-tabs" role="toolbar" aria-label="Filter achievements">
+            <button class="ach-filter-btn active" data-ach-filter="all">All</button>
+            <button class="ach-filter-btn" data-ach-filter="unlocked">Unlocked ✅</button>
+            <button class="ach-filter-btn" data-ach-filter="locked">Locked 🔒</button>
+            <button class="ach-filter-btn" data-ach-filter="common">Common</button>
+            <button class="ach-filter-btn" data-ach-filter="uncommon">Uncommon</button>
+            <button class="ach-filter-btn" data-ach-filter="rare">Rare</button>
+            <button class="ach-filter-btn" data-ach-filter="legendary">Legendary</button>
+          </div>
+
+          <div class="achievements-grid" id="achievementsGrid" aria-label="Achievement list">
+            <!-- Dynamically populated by app.js -->
+          </div>
+        </section>
+      </div>
+
+      <!-- ==================== TAB: MULTIPLAYER ==================== -->
+      <div class="tab-content hidden" id="tab-multiplayer" role="tabpanel" aria-labelledby="tab-multiplayer-btn">
+        <section class="glass-card">
+          <div class="multiplayer-panel">
+            <div class="multiplayer-hero">
+              <div class="multiplayer-coming-soon-badge">🚧 In Development</div>
+              <h2 class="multiplayer-title">Real-Time Multiplayer</h2>
+              <p class="multiplayer-desc">Race against friends and typists worldwide in real-time. Compete in typing tournaments, join private rooms, and climb the global leaderboard.</p>
+              <div class="multiplayer-progress-section">
+                <span class="mp-progress-label">Development progress:</span>
+                <div class="mp-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="35" aria-label="35% complete">
+                  <div class="mp-progress-fill"></div>
+                </div>
+                <span class="mp-progress-label">35%</span>
+              </div>
+            </div>
+
+            <div class="multiplayer-features-grid" aria-label="Upcoming multiplayer features">
+              <div class="mp-feature-card">
+                <span class="mp-feature-icon">⚔️</span>
+                <div class="mp-feature-title">Player vs Player</div>
+                <div class="mp-feature-desc">1v1 duels with real-time race visualization</div>
+              </div>
+              <div class="mp-feature-card">
+                <span class="mp-feature-icon">🌍</span>
+                <div class="mp-feature-title">Public Matchmaking</div>
+                <div class="mp-feature-desc">Auto-match with players of similar skill</div>
+              </div>
+              <div class="mp-feature-card">
+                <span class="mp-feature-icon">🔒</span>
+                <div class="mp-feature-title">Private Rooms</div>
+                <div class="mp-feature-desc">Create invite-only rooms for friends</div>
+              </div>
+              <div class="mp-feature-card">
+                <span class="mp-feature-icon">👥</span>
+                <div class="mp-feature-title">Friends System</div>
+                <div class="mp-feature-desc">Add friends and challenge them directly</div>
+              </div>
+              <div class="mp-feature-card">
+                <span class="mp-feature-icon">🏆</span>
+                <div class="mp-feature-title">Global Leaderboard</div>
+                <div class="mp-feature-desc">Compete for the top spot worldwide</div>
+              </div>
+              <div class="mp-feature-card">
+                <span class="mp-feature-icon">🎖️</span>
+                <div class="mp-feature-title">Tournaments</div>
+                <div class="mp-feature-desc">Weekly bracket competitions with prizes</div>
+              </div>
+            </div>
+
+            <div class="mp-notify-section">
+              <p>Want to be notified when multiplayer launches? Keep playing and earning XP — early supporters get bonus rewards! 🎁</p>
+              <button class="btn btn-primary glow-btn" onclick="window.typeplayMpNotify && window.typeplayMpNotify()" id="mpNotifyBtn">🔔 Notify Me on Launch</button>
+            </div>
           </div>
         </section>
       </div>
 
       <!-- ==================== TAB: STATS ==================== -->
-      <div class="tab-content hidden" id="tab-stats">
-        <!-- Personal Records Dashboard -->
-        <section class="dashboard-panel glass-card" aria-label="Performance Stats Dashboard">
+      <div class="tab-content hidden" id="tab-stats" role="tabpanel" aria-labelledby="tab-stats-btn">
+        <!-- Enhanced Stats Summary Cards -->
+        <section class="glass-card" aria-label="Statistics summary">
           <h2 class="panel-title">📊 Stats Dashboard</h2>
-          <div class="dashboard-grid">
-            <div class="dash-card">
-              <h3>Highest WPM</h3>
-              <p id="highestWpm">0</p>
+          <div class="stats-summary-grid" id="statsSummaryGrid">
+            <div class="stat-summary-card" style="--card-accent:#4facfe">
+              <span class="stat-summary-icon">⚡</span>
+              <span class="stat-summary-value" id="highestWpm">0</span>
+              <span class="stat-summary-label">Highest WPM</span>
             </div>
-            <div class="dash-card">
-              <h3>Average WPM</h3>
-              <p id="avgWpm">0</p>
+            <div class="stat-summary-card" style="--card-accent:#38bdf8">
+              <span class="stat-summary-icon">📈</span>
+              <span class="stat-summary-value" id="avgWpm">0</span>
+              <span class="stat-summary-label">Average WPM</span>
             </div>
-            <div class="dash-card">
-              <h3>Best Accuracy</h3>
-              <p id="highestAcc">0%</p>
+            <div class="stat-summary-card" style="--card-accent:#10b981">
+              <span class="stat-summary-icon">🎯</span>
+              <span class="stat-summary-value" id="highestAcc">0%</span>
+              <span class="stat-summary-label">Best Accuracy</span>
             </div>
-            <div class="dash-card">
-              <h3>Avg Accuracy</h3>
-              <p id="avgAcc">0%</p>
+            <div class="stat-summary-card" style="--card-accent:#6ee7b7">
+              <span class="stat-summary-icon">📊</span>
+              <span class="stat-summary-value" id="avgAcc">0%</span>
+              <span class="stat-summary-label">Avg Accuracy</span>
             </div>
-            <div class="dash-card">
-              <h3>Practice Time</h3>
-              <p id="totalTime">0s</p>
+            <div class="stat-summary-card" style="--card-accent:#a855f7">
+              <span class="stat-summary-icon">📝</span>
+              <span class="stat-summary-value" id="totalWordsTyped">0</span>
+              <span class="stat-summary-label">Total Words</span>
             </div>
-            <div class="dash-card">
-              <h3>Daily Streak</h3>
-              <p id="currentStreak">0 days</p>
+            <div class="stat-summary-card" style="--card-accent:#8b5cf6">
+              <span class="stat-summary-icon">🔤</span>
+              <span class="stat-summary-value" id="totalCharsTyped">0</span>
+              <span class="stat-summary-label">Chars Typed</span>
             </div>
-            <div class="dash-card">
-              <h3>Total Tests</h3>
-              <p id="totalTests">0</p>
+            <div class="stat-summary-card" style="--card-accent:#f59e0b">
+              <span class="stat-summary-icon">⏰</span>
+              <span class="stat-summary-value" id="hoursPracticed">0h</span>
+              <span class="stat-summary-label">Hours Practiced</span>
             </div>
-            <div class="dash-card">
-              <h3>Total Chars Typed</h3>
-              <p id="totalCharsTyped">0</p>
+            <div class="stat-summary-card" style="--card-accent:#f97316">
+              <span class="stat-summary-icon">✅</span>
+              <span class="stat-summary-value" id="totalTests">0</span>
+              <span class="stat-summary-label">Tests Completed</span>
             </div>
-            <div class="dash-card">
-              <h3>Total Words Typed</h3>
-              <p id="totalWordsTyped">0</p>
+            <div class="stat-summary-card" style="--card-accent:#ec4899">
+              <span class="stat-summary-icon">🎮</span>
+              <span class="stat-summary-value" id="gamesPlayedStat">0</span>
+              <span class="stat-summary-label">Games Played</span>
             </div>
-            <div class="dash-card">
-              <h3>Badges Earned</h3>
-              <p id="totalBadgesEarned">0</p>
+            <div class="stat-summary-card" style="--card-accent:#14b8a6">
+              <span class="stat-summary-icon">📖</span>
+              <span class="stat-summary-value" id="lessonsCompletedStat">0</span>
+              <span class="stat-summary-label">Lessons Done</span>
+            </div>
+            <div class="stat-summary-card" style="--card-accent:#6366f1">
+              <span class="stat-summary-icon">⚡</span>
+              <span class="stat-summary-value" id="xpEarnedStat">0</span>
+              <span class="stat-summary-label">XP Earned</span>
+            </div>
+            <div class="stat-summary-card" style="--card-accent:#eab308">
+              <span class="stat-summary-icon">🪙</span>
+              <span class="stat-summary-value" id="coinsEarnedStat">0</span>
+              <span class="stat-summary-label">Coins Earned</span>
+            </div>
+            <div class="stat-summary-card" style="--card-accent:#ef4444">
+              <span class="stat-summary-icon">🔥</span>
+              <span class="stat-summary-value" id="currentStreak">0</span>
+              <span class="stat-summary-label">Day Streak</span>
+            </div>
+            <div class="stat-summary-card" style="--card-accent:#dc2626">
+              <span class="stat-summary-icon">🏆</span>
+              <span class="stat-summary-value" id="longestStreakStat">0</span>
+              <span class="stat-summary-label">Longest Streak</span>
+            </div>
+            <div class="stat-summary-card" style="--card-accent:#22c55e">
+              <span class="stat-summary-icon">📅</span>
+              <span class="stat-summary-value" id="bestDayStat">—</span>
+              <span class="stat-summary-label">Best Day</span>
+            </div>
+            <div class="stat-summary-card" style="--card-accent:#84cc16">
+              <span class="stat-summary-icon">🏅</span>
+              <span class="stat-summary-value" id="totalBadgesEarned">0</span>
+              <span class="stat-summary-label">Badges Earned</span>
             </div>
           </div>
         </section>
@@ -645,15 +885,7 @@
         <section class="charts-panel glass-card" aria-label="Typing speed history chart">
           <h2 class="panel-title">📈 Performance Chart</h2>
           <div class="chart-container">
-            <canvas id="performanceChart"></canvas>
-          </div>
-        </section>
-
-        <!-- Achievements Panel -->
-        <section class="achievements-panel glass-card" aria-label="Unlocked badges list">
-          <h2 class="panel-title">🏆 Unlocked Badges</h2>
-          <div id="badgesGrid" class="badges-grid">
-            <!-- Dynamically populated badge cards -->
+            <canvas id="performanceChart" aria-label="Performance chart showing WPM over time"></canvas>
           </div>
         </section>
 
@@ -662,15 +894,15 @@
           <div class="panel-header">
             <h2 class="panel-title">📅 Test History Log</h2>
             <div class="export-options">
-              <button id="exportCsvBtn" class="btn btn-sm btn-outline">CSV</button>
-              <button id="exportJsonBtn" class="btn btn-sm btn-outline">JSON</button>
-              <button id="exportPdfBtn" class="btn btn-sm btn-outline">PDF Report</button>
+              <button id="exportCsvBtn" class="btn btn-sm btn-outline" aria-label="Export history as CSV">CSV</button>
+              <button id="exportJsonBtn" class="btn btn-sm btn-outline" aria-label="Export history as JSON">JSON</button>
+              <button id="exportPdfBtn" class="btn btn-sm btn-outline" aria-label="Export history as PDF report">PDF Report</button>
             </div>
           </div>
           
           <div class="history-search-bar">
-            <input type="text" id="historySearch" placeholder="🔍 Search logs (paragraph, difficulty)..." />
-            <select id="historySort">
+            <input type="text" id="historySearch" placeholder="🔍 Search logs (paragraph, difficulty)..." aria-label="Search history logs" />
+            <select id="historySort" aria-label="Sort history">
               <option value="date-desc">Newest First</option>
               <option value="date-asc">Oldest First</option>
               <option value="wpm-desc">Speed: High to Low</option>
@@ -678,20 +910,272 @@
               <option value="acc-desc">Accuracy: High to Low</option>
               <option value="acc-asc">Accuracy: Low to High</option>
             </select>
-            <button id="clearHistoryBtn" class="btn btn-sm btn-danger">Clear All History</button>
+            <button id="clearHistoryBtn" class="btn btn-sm btn-danger" aria-label="Clear all history">Clear All History</button>
           </div>
 
-          <ul id="historyList" class="history-list">
+          <ul id="historyList" class="history-list" aria-label="Typing test history entries" aria-live="polite">
             <!-- Dynamically populated items -->
           </ul>
+        </section>
+      </div>
+
+      <!-- ==================== TAB: PROFILE ==================== -->
+      <div class="tab-content hidden" id="tab-profile" role="tabpanel" aria-labelledby="tab-profile-btn">
+        <section class="glass-card" aria-label="User profile">
+          <div class="profile-dashboard" id="profileDashboard">
+
+            <!-- Profile Hero Card -->
+            <div class="profile-hero-card">
+              <div class="profile-avatar-large" id="profileAvatarLarge" role="img" aria-label="User avatar" title="Click Shop to change your avatar">
+                👽
+                <div class="profile-avatar-edit-hint" aria-hidden="true">✏️</div>
+              </div>
+              <div class="profile-hero-info">
+                <div class="profile-username-row">
+                  <span class="profile-username" id="profilePageUsername">Typer Cadet</span>
+                  <span class="profile-level-badge" id="profilePageLevel">Level 1</span>
+                </div>
+                <div class="profile-xp-bar-section">
+                  <div class="profile-xp-labels">
+                    <span id="profilePageXpLabel">0 XP</span>
+                    <span id="profilePageXpNeeded">100 XP to next level</span>
+                  </div>
+                  <div class="profile-xp-bar" role="progressbar" aria-label="XP progress to next level" aria-valuemin="0" aria-valuemax="100">
+                    <div class="profile-xp-fill" id="profilePageXpFill" style="width:0%"></div>
+                  </div>
+                </div>
+                <div class="profile-quick-stats">
+                  <div class="pqs-item">🪙 <strong id="profilePageCoins">0</strong> Coins</div>
+                  <div class="pqs-item">🔥 <strong id="profilePageStreak">0</strong> Day Streak</div>
+                  <div class="pqs-item">🏅 <strong id="profilePageAchs">0</strong> Achievements</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Streak Section -->
+            <div>
+              <h3 class="panel-title" style="margin-bottom:12px;">🔥 Streaks</h3>
+              <div class="profile-streak-section">
+                <div class="profile-streak-card">
+                  <span class="profile-streak-value" id="profileCurrentStreak">🔥 0</span>
+                  <span class="profile-streak-label">Current Streak</span>
+                </div>
+                <div class="profile-streak-card">
+                  <span class="profile-streak-value" id="profileLongestStreak">🏆 0</span>
+                  <span class="profile-streak-label">Longest Streak</span>
+                </div>
+                <div class="profile-streak-card">
+                  <span class="profile-streak-value" id="profileFavTheme">🌙 Dark</span>
+                  <span class="profile-streak-label">Active Theme</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div>
+              <h3 class="panel-title" style="margin-bottom:12px;">📊 Statistics</h3>
+              <div class="profile-stats-grid" id="profileStatsGrid">
+                <div class="profile-stat-card">
+                  <span class="profile-stat-icon">⚡</span>
+                  <span class="profile-stat-value" id="profileBestWpm">0</span>
+                  <span class="profile-stat-label">Best WPM</span>
+                </div>
+                <div class="profile-stat-card">
+                  <span class="profile-stat-icon">📈</span>
+                  <span class="profile-stat-value" id="profileAvgWpm">0</span>
+                  <span class="profile-stat-label">Avg WPM</span>
+                </div>
+                <div class="profile-stat-card">
+                  <span class="profile-stat-icon">🎯</span>
+                  <span class="profile-stat-value" id="profileAvgAcc">0%</span>
+                  <span class="profile-stat-label">Avg Accuracy</span>
+                </div>
+                <div class="profile-stat-card">
+                  <span class="profile-stat-icon">✅</span>
+                  <span class="profile-stat-value" id="profileTotalTests">0</span>
+                  <span class="profile-stat-label">Tests Done</span>
+                </div>
+                <div class="profile-stat-card">
+                  <span class="profile-stat-icon">📝</span>
+                  <span class="profile-stat-value" id="profileTotalWords">0</span>
+                  <span class="profile-stat-label">Words Typed</span>
+                </div>
+                <div class="profile-stat-card">
+                  <span class="profile-stat-icon">⏰</span>
+                  <span class="profile-stat-value" id="profileHours">0h</span>
+                  <span class="profile-stat-label">Time Practiced</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Achievements Preview -->
+            <div class="profile-achievements-preview">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <h3 class="panel-title" style="margin-bottom:0;">🏅 Recent Achievements</h3>
+                <button class="btn btn-sm btn-outline" onclick="document.querySelector('[data-tab=achievements]').click()">View All →</button>
+              </div>
+              <div class="profile-achievements-row" id="profileAchievementsRow">
+                <!-- Top 8 unlocked achievements shown here -->
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ==================== TAB: SHOP ==================== -->
+      <div class="tab-content hidden" id="tab-shop" role="tabpanel" aria-labelledby="tab-shop-btn">
+        <section class="shop-panel glass-card">
+          <div class="shop-header-row">
+            <div>
+              <h2 class="panel-title">🛍️ Rewards &amp; Theme Shop</h2>
+              <p class="panel-subtitle">Deduct coins to purchase and equip customization items.</p>
+            </div>
+            <div class="shop-balance-display" aria-live="polite">
+              Coin Balance: <span class="coins-balance">🪙 <span id="shopCoinsText">0</span></span>
+            </div>
+          </div>
+          
+          <div class="shop-nav-tabs" role="tablist" aria-label="Shop categories">
+            <button class="btn btn-outline shop-category-btn active" data-category="themes" role="tab" aria-selected="true">🎨 Themes</button>
+            <button class="btn btn-outline shop-category-btn" data-category="cursors" role="tab" aria-selected="false">🖱️ Cursors</button>
+            <button class="btn btn-outline shop-category-btn" data-category="avatars" role="tab" aria-selected="false">👤 Avatars</button>
+            <button class="btn btn-outline shop-category-btn" data-category="badges" role="tab" aria-selected="false">🏆 Badges</button>
+          </div>
+
+          <div class="shop-items-grid" id="shopItemsGrid" aria-label="Shop items">
+            <!-- Dynamically populated shop items -->
+          </div>
+        </section>
+      </div>
+
+      <!-- ==================== TAB: SETTINGS ==================== -->
+      <div class="tab-content hidden" id="tab-settings" role="tabpanel" aria-labelledby="tab-settings-btn">
+        <section class="glass-card">
+          <h2 class="panel-title">⚙️ Settings &amp; Preferences</h2>
+          <div class="settings-panel">
+
+            <!-- Appearance -->
+            <div class="settings-section">
+              <div class="settings-section-header" role="button" aria-expanded="true" tabindex="0" id="settingsAppearanceHeader">
+                🎨 Appearance
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+              </div>
+              <div class="settings-section-body" id="settingsAppearanceBody">
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row-label">Font Size</div>
+                    <div class="settings-row-desc">Adjust the app text size</div>
+                  </div>
+                  <div style="display:flex;gap:6px;">
+                    <button class="btn btn-sm btn-outline font-size-btn" data-size="sm">S</button>
+                    <button class="btn btn-sm btn-outline font-size-btn active" data-size="md">M</button>
+                    <button class="btn btn-sm btn-outline font-size-btn" data-size="lg">L</button>
+                    <button class="btn btn-sm btn-outline font-size-btn" data-size="xl">XL</button>
+                  </div>
+                </div>
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row-label">Dyslexia-Friendly Font</div>
+                    <div class="settings-row-desc">Increases readability for dyslexic users</div>
+                  </div>
+                  <label class="toggle-switch" aria-label="Toggle dyslexia-friendly font">
+                    <input type="checkbox" id="dyslexiaFontToggle" />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row-label">High Contrast Mode</div>
+                    <div class="settings-row-desc">Improve visibility and contrast</div>
+                  </div>
+                  <label class="toggle-switch" aria-label="Toggle high contrast mode">
+                    <input type="checkbox" id="highContrastToggle" />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Typing Preferences -->
+            <div class="settings-section">
+              <div class="settings-section-header" role="button" aria-expanded="true" tabindex="0" id="settingsTypingHeader">
+                ⌨️ Typing Preferences
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+              </div>
+              <div class="settings-section-body" id="settingsTypingBody">
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row-label">Sound Effects</div>
+                    <div class="settings-row-desc">Keystroke, combo, and UI sounds</div>
+                  </div>
+                  <label class="toggle-switch" aria-label="Toggle sound effects">
+                    <input type="checkbox" id="settingsSoundToggle" checked />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row-label">Show Virtual Keyboard</div>
+                    <div class="settings-row-desc">Display the keyboard visualizer</div>
+                  </div>
+                  <label class="toggle-switch" aria-label="Toggle virtual keyboard">
+                    <input type="checkbox" id="settingsKeyboardToggle" checked />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row-label">Show Finger Guide</div>
+                    <div class="settings-row-desc">Finger placement hints while typing</div>
+                  </div>
+                  <label class="toggle-switch" aria-label="Toggle finger guide">
+                    <input type="checkbox" id="settingsFingerGuideToggle" checked />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Developer / Advanced -->
+            <div class="settings-section">
+              <div class="settings-section-header" role="button" aria-expanded="false" tabindex="0" id="settingsDevHeader">
+                🛠️ Developer &amp; Advanced
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+              </div>
+              <div class="settings-section-body hidden" id="settingsDevBody">
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row-label">Reset Onboarding Tutorial</div>
+                    <div class="settings-row-desc">Re-show the first-time welcome tour</div>
+                  </div>
+                  <button class="btn btn-sm btn-outline" id="resetOnboardingBtn">Reset Tour</button>
+                </div>
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row-label">Export All Data</div>
+                    <div class="settings-row-desc">Download your complete profile and history</div>
+                  </div>
+                  <button class="btn btn-sm btn-outline" id="exportAllDataBtn">📦 Export</button>
+                </div>
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row-label">Reset All Progress</div>
+                    <div class="settings-row-desc">⚠️ Permanently erase all local data</div>
+                  </div>
+                  <button class="btn btn-sm btn-danger" id="resetAllProgressBtn">⚠️ Reset All</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
         </section>
       </div>
 
     </main>
 
     <!-- Footer -->
-    <footer class="app-footer glass-card">
-      <p>&copy; 2026 Typing Learning & Gaming Platform. Designed for visual excellence and gamified education.</p>
+    <footer class="app-footer glass-card" role="contentinfo">
+      <p>&copy; 2026 TypePlay — Typing Learning &amp; Gaming Platform. Designed for visual excellence and gamified education.</p>
     </footer>
   </div>
 
@@ -700,19 +1184,19 @@
   <!-- ======================== -->
 
   <!-- Certificate Modal -->
-  <div id="certificateModal" class="modal hidden" aria-modal="true" role="dialog">
+  <div id="certificateModal" class="modal hidden" aria-modal="true" role="dialog" aria-labelledby="certModalTitle">
     <div class="modal-content certificate-modal-content glass-card">
-      <span id="closeCertBtn" class="close-modal-btn" aria-label="Close modal">&times;</span>
-      <h2>📜 Generate Typing Certificate</h2>
+      <span id="closeCertBtn" class="close-modal-btn" aria-label="Close certificate modal" role="button" tabindex="0">&times;</span>
+      <h2 id="certModalTitle">📜 Generate Typing Certificate</h2>
       <p class="modal-tip">Enter your name to generate a custom printable certificate of achievement.</p>
       
       <div class="modal-input-row">
         <label for="certNameInput">Your Name:</label>
-        <input type="text" id="certNameInput" placeholder="John Doe" maxlength="30" />
+        <input type="text" id="certNameInput" placeholder="John Doe" maxlength="30" aria-label="Your name for the certificate" />
       </div>
 
       <div class="canvas-certificate-wrapper">
-        <canvas id="certificateCanvas" width="1200" height="840"></canvas>
+        <canvas id="certificateCanvas" width="1200" height="840" aria-label="Certificate preview"></canvas>
       </div>
 
       <div class="modal-actions">
@@ -722,28 +1206,28 @@
   </div>
 
   <!-- Leaderboard Modal -->
-  <div id="leaderboardModal" class="modal hidden" aria-modal="true" role="dialog">
+  <div id="leaderboardModal" class="modal hidden" aria-modal="true" role="dialog" aria-labelledby="leaderboardModalTitle">
     <div class="modal-content leaderboard-modal-content glass-card">
-      <span id="closeLeaderboardBtn" class="close-modal-btn" aria-label="Close modal">&times;</span>
-      <h2>🏆 Global Leaderboard (Local)</h2>
+      <span id="closeLeaderboardBtn" class="close-modal-btn" aria-label="Close leaderboard" role="button" tabindex="0">&times;</span>
+      <h2 id="leaderboardModalTitle">🏆 Global Leaderboard (Local)</h2>
       <p class="modal-tip">Top 10 highest-speed typing runs ever recorded on this browser.</p>
       
-      <ul id="leaderboardList" class="leaderboard-list">
+      <ul id="leaderboardList" class="leaderboard-list" aria-label="Leaderboard entries">
         <!-- Rendered lists -->
       </ul>
     </div>
   </div>
 
   <!-- Keyboard Shortcuts Modal -->
-  <div id="shortcutsModal" class="modal hidden" aria-modal="true" role="dialog">
+  <div id="shortcutsModal" class="modal hidden" aria-modal="true" role="dialog" aria-labelledby="shortcutsModalTitle">
     <div class="modal-content shortcuts-modal-content glass-card">
-      <span id="closeShortcutsBtn" class="close-modal-btn" aria-label="Close modal">&times;</span>
-      <h2>⌨️ Keyboard Shortcuts</h2>
-      <table class="shortcuts-table">
+      <span id="closeShortcutsBtn" class="close-modal-btn" aria-label="Close shortcuts modal" role="button" tabindex="0">&times;</span>
+      <h2 id="shortcutsModalTitle">⌨️ Keyboard Shortcuts</h2>
+      <table class="shortcuts-table" role="table">
         <thead>
           <tr>
-            <th>Action</th>
-            <th>Shortcut</th>
+            <th scope="col">Action</th>
+            <th scope="col">Shortcut</th>
           </tr>
         </thead>
         <tbody>
@@ -761,7 +1245,11 @@
           </tr>
           <tr>
             <td>Focus typing field</td>
-            <td>Click anywhere inside paragraph field</td>
+            <td>Click inside paragraph field</td>
+          </tr>
+          <tr>
+            <td>Navigate tabs</td>
+            <td><kbd>Alt</kbd> + <kbd>1</kbd>–<kbd>9</kbd></td>
           </tr>
         </tbody>
       </table>
